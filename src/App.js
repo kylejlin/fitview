@@ -4,6 +4,14 @@ import "./App.css";
 import EasyFit from "easy-fit";
 
 import Option from "./Option";
+import {
+  getActivityRecords,
+  capitalizeFirstLetter,
+  dayOfWeekString,
+  monthString,
+  getTime,
+  getActivityDuration
+} from "./helpers";
 
 export default class App extends React.Component {
   constructor() {
@@ -82,69 +90,5 @@ export default class App extends React.Component {
       });
       reader.readAsArrayBuffer(file);
     }
-  }
-}
-
-function getActivityRecords(activity) {
-  return activity.sessions.map(session => getSessionRecords(session)).flat();
-}
-
-function getSessionRecords(session) {
-  return session.laps.map(lap => lap.records).flat();
-}
-
-function capitalizeFirstLetter(word) {
-  return word.slice(0, 1).toUpperCase() + word.slice(1).toLowerCase();
-}
-
-function dayOfWeekString(index) {
-  return [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday"
-  ][index];
-}
-
-function monthString(index) {
-  return [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-  ][index];
-}
-
-function getTime(date) {
-  return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-}
-
-function getActivityDuration(activity) {
-  const hours = Math.floor(activity.total_timer_time / 3600);
-  const minutes = Math.floor((activity.total_timer_time % 3600) / 60);
-  const seconds = Math.floor(activity.total_timer_time % 60);
-  return (
-    zeroPad(hours, 2) + ":" + zeroPad(minutes, 2) + ":" + zeroPad(seconds, 2)
-  );
-}
-
-function zeroPad(value, minWidth) {
-  const string = "" + value;
-  if (string.length < minWidth) {
-    const deficit = minWidth - string.length;
-    return "0".repeat(deficit) + string;
-  } else {
-    return string;
   }
 }

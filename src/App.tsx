@@ -1,7 +1,7 @@
 import React from "react";
 import "./App.css";
 
-import EasyFit from "easy-fit";
+import EasyFit from "./easyFit";
 
 import Option from "./Option";
 import {
@@ -13,9 +13,11 @@ import {
   getActivityDuration
 } from "./helpers";
 
-export default class App extends React.Component {
-  constructor() {
-    super();
+export default class App extends React.Component<{}, AppState> {
+  fileRef: React.RefObject<HTMLInputElement>;
+
+  constructor(props: object) {
+    super(props);
 
     this.state = { file: Option.none() };
 
@@ -63,8 +65,8 @@ export default class App extends React.Component {
   }
 
   handleUpload() {
-    const { files } = this.fileRef.current;
-    if ("object" === typeof files && files.length > 0) {
+    const { files } = this.fileRef.current!;
+    if (files !== null && "object" === typeof files && files.length > 0) {
       const file = files[0];
       const reader = new FileReader();
       reader.addEventListener("loadend", () => {
@@ -79,7 +81,7 @@ export default class App extends React.Component {
             temperatureUnit: "kelvin",
             elapsedRecordField: true,
             mode: "cascade"
-          }).parse(buffer, (error, data) => {
+          }).parse(buffer, (error: any, data: any) => {
             if (error) {
               throw error;
             } else {
@@ -91,4 +93,8 @@ export default class App extends React.Component {
       reader.readAsArrayBuffer(file);
     }
   }
+}
+
+interface AppState {
+  file: Option<any>;
 }

@@ -1,3 +1,5 @@
+import { geocoder } from "./lib";
+
 export function getActivityRecords(activity: any): any[] {
   return activity.sessions
     .map((session: any) => getSessionRecords(session))
@@ -62,4 +64,18 @@ export function zeroPad(value: any, minWidth: number): string {
   } else {
     return string;
   }
+}
+
+export function reverseGeocode(lat: number, lon: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    geocoder()
+      .reverse(lon, lat)
+      .end((err: any, result: any) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result.display_name);
+        }
+      });
+  });
 }

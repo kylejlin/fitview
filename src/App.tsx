@@ -1,7 +1,9 @@
 import React from "react";
 import "./App.css";
 
-import EasyFit from "./easyFit";
+import RenderablePromise from "./RenderablePromise";
+
+import { EasyFit } from "./lib";
 
 import Option from "./Option";
 import {
@@ -10,7 +12,8 @@ import {
   dayOfWeekString,
   monthString,
   getTime,
-  getActivityDuration
+  getActivityDuration,
+  reverseGeocode
 } from "./helpers";
 
 export default class App extends React.Component<{}, AppState> {
@@ -19,7 +22,7 @@ export default class App extends React.Component<{}, AppState> {
   constructor(props: object) {
     super(props);
 
-    this.state = { file: Option.none() };
+    this.state = { activity: Option.none() };
 
     this.fileRef = React.createRef();
 
@@ -29,7 +32,7 @@ export default class App extends React.Component<{}, AppState> {
   render() {
     return (
       <div className="App">
-        {this.state.file.match({
+        {this.state.activity.match({
           none: () => (
             <label className="UploadButton">
               <input
@@ -42,10 +45,10 @@ export default class App extends React.Component<{}, AppState> {
               Upload .fit file
             </label>
           ),
-          some: value => {
-            console.log(value);
+          some: ({ location, file }) => {
+            console.log(file);
 
-            const records = getActivityRecords(value.activity);
+            const records = getActivityRecords(file.activity);
             const startDate = records[0].timestamp;
             const endDate = records[records.length - 1].timestamp;
 
@@ -55,7 +58,7 @@ export default class App extends React.Component<{}, AppState> {
                   <div className="Entry">
                     Sport:{" "}
                     <span className="Value">
-                      {capitalizeFirstLetter(value.sport.sport)}
+                      {capitalizeFirstLetter(file.sport.sport)}
                     </span>
                   </div>
                   <div className="Entry">
@@ -65,11 +68,18 @@ export default class App extends React.Component<{}, AppState> {
                       {startDate.getDate()} {monthString(startDate.getMonth())}{" "}
                       {startDate.getFullYear()}
                     </span>
+                    Location:{" "}
+                    <span className="Value">
+                      <RenderablePromise
+                        promise={location}
+                        fallback="loading..."
+                      />
+                    </span>
                   </div>
                   <div className="Entry">
                     Total duration:{" "}
                     <span className="Value">
-                      {getActivityDuration(value.activity)}
+                      {getActivityDuration(file.activity)}
                     </span>{" "}
                     Start time:{" "}
                     <span className="Value">{getTime(startDate)}</span> End
@@ -105,7 +115,16 @@ export default class App extends React.Component<{}, AppState> {
             if (error) {
               throw error;
             } else {
-              this.setState({ file: Option.some(data) });
+              const firstSession = data.activity.sessions[0];
+              this.setState({
+                activity: Option.some({
+                  location: reverseGeocode(
+                    firstSession.start_position_lat,
+                    firstSession.start_position_long
+                  ),
+                  file: data
+                })
+              });
             }
           });
         }
@@ -116,5 +135,10 @@ export default class App extends React.Component<{}, AppState> {
 }
 
 interface AppState {
-  file: Option<any>;
+  activity: Option<Activity>;
+}
+
+interface Activity {
+  location: Promise<string>;
+  file: any;
 }

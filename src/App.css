@@ -1,33 +1,47 @@
 .App {
-  text-align: center;
+  background-color: #222;
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
-  pointer-events: none;
+.UploadButton {
+  background-color: #f58404;
+  color: #eee;
+  padding: 1em;
+  border-radius: 0.5em;
+  display: inline-block;
+  position: absolute;
+  left: 50vw;
+  top: 50vh;
+  transform: translate(-50%, -50%);
+  border-bottom: 5px solid #d46701;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.UploadButton:hover {
+  background: #f58d04;
+  border-bottom: 5px solid #d48001;
 }
 
-.App-link {
-  color: #61dafb;
+.UploadButton:active {
+  background: #f58d04;
+  border-bottom: 3px solid #d48001;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.ActivityOverview {
+  background-color: #f58404;
+  position: absolute;
+  width: 100vw;
+  font-size: calc(0.06 * var(--minor-axis));
+}
+
+.Entry {
+  margin: calc(0.02 * var(--minor-axis)) 0 calc(0.02 * var(--minor-axis))
+    calc(0.01 * var(--minor-axis));
+}
+
+.Value {
+  font-weight: bold;
 }

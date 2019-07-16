@@ -29,15 +29,19 @@ export default class App extends React.Component<{}, AppState> {
   render() {
     return (
       <div className="App">
-        <input
-          type="file"
-          accept="fit"
-          onChange={this.handleUpload}
-          ref={this.fileRef}
-        />
-
         {this.state.file.match({
-          none: () => <p>No file uploaded</p>,
+          none: () => (
+            <label className="UploadButton">
+              <input
+                type="file"
+                accept="fit"
+                onChange={this.handleUpload}
+                ref={this.fileRef}
+                style={{ display: "none" }}
+              />
+              Upload .fit file
+            </label>
+          ),
           some: value => {
             console.log(value);
 
@@ -47,15 +51,31 @@ export default class App extends React.Component<{}, AppState> {
 
             return (
               <div className="File">
-                <div>Sport: {capitalizeFirstLetter(value.sport.sport)}</div>
-                <div>
-                  Date: {dayOfWeekString(startDate.getDay())}{" "}
-                  {startDate.getDate()} {monthString(startDate.getMonth())}{" "}
-                  {startDate.getFullYear()}
+                <div className="ActivityOverview">
+                  <div className="Entry">
+                    Sport:{" "}
+                    <span className="Value">
+                      {capitalizeFirstLetter(value.sport.sport)}
+                    </span>
+                  </div>
+                  <div className="Entry">
+                    Date:{" "}
+                    <span className="Value">
+                      {dayOfWeekString(startDate.getDay())}{" "}
+                      {startDate.getDate()} {monthString(startDate.getMonth())}{" "}
+                      {startDate.getFullYear()}
+                    </span>
+                  </div>
+                  <div className="Entry">
+                    Total duration:{" "}
+                    <span className="Value">
+                      {getActivityDuration(value.activity)}
+                    </span>{" "}
+                    Start time:{" "}
+                    <span className="Value">{getTime(startDate)}</span> End
+                    time: <span className="Value">{getTime(endDate)}</span>
+                  </div>
                 </div>
-                <div>Start time: {getTime(startDate)}</div>
-                <div>End time: {getTime(endDate)}</div>
-                <div>Total duration: {getActivityDuration(value.activity)}</div>
               </div>
             );
           }

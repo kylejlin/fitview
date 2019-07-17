@@ -3,6 +3,9 @@ import "./App.css";
 
 import RenderablePromise from "./RenderablePromise";
 
+import ExpandButton from "./components/ExpandButton";
+import Location from "./components/Location";
+
 import { EasyFit } from "./lib";
 
 import Option from "./Option";
@@ -14,8 +17,7 @@ import {
   getTime,
   getActivityDuration,
   reverseGeocode,
-  Address,
-  Location
+  Address
 } from "./helpers";
 
 export default class App extends React.Component<{}, AppState> {
@@ -29,6 +31,9 @@ export default class App extends React.Component<{}, AppState> {
     this.fileRef = React.createRef();
 
     this.handleUpload = this.handleUpload.bind(this);
+    this.toggleIsStartLocationTruncated = this.toggleIsStartLocationTruncated.bind(
+      this
+    );
   }
 
   render() {
@@ -83,10 +88,16 @@ export default class App extends React.Component<{}, AppState> {
                       <RenderablePromise
                         promise={startLocation
                           .then(startLocation => (
-                            <Location
-                              isTruncated={isStartLocationTruncated}
-                              location={startLocation}
-                            />
+                            <>
+                              <ExpandButton
+                                isExpanded={!isStartLocationTruncated}
+                                onClick={this.toggleIsStartLocationTruncated}
+                              />
+                              <Location
+                                isTruncated={isStartLocationTruncated}
+                                location={startLocation}
+                              />
+                            </>
                           ))
                           .catch(err => {
                             console.log("Error loading start location", err);
@@ -179,6 +190,15 @@ export default class App extends React.Component<{}, AppState> {
       });
       reader.readAsArrayBuffer(file);
     }
+  }
+
+  toggleIsStartLocationTruncated() {
+    this.setState(state => ({
+      activity: state.activity.map(activity => ({
+        ...activity,
+        isStartLocationTruncated: !activity.isStartLocationTruncated
+      }))
+    }));
   }
 }
 

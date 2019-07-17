@@ -31,7 +31,8 @@
 }
 
 .ActivityOverview {
-  background-color: #f58404;
+  background-color: #111;
+  color: #f58404;
   width: 100vw;
   font-size: calc(0.06 * var(--minor-axis));
 }
@@ -42,5 +43,6 @@
 }
 
 .Value {
+  color: #eee;
   font-weight: bold;
 }

@@ -44,7 +44,7 @@ export function monthString(index: number): string {
 }
 
 export function getTime(date: Date): string {
-  return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+  return date.getHours() + ":" + date.getMinutes();
 }
 
 export function getActivityDuration(activity: any): string {

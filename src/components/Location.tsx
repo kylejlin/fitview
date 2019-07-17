@@ -1,5 +1,3 @@
-import React from "react";
-
 import { Address } from "../helpers";
 
 // Actually returns a `string`, but I used `any` to appease the compiler

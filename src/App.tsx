@@ -81,12 +81,17 @@ export default class App extends React.Component<{}, AppState> {
                     Start location:{" "}
                     <span className="Value">
                       <RenderablePromise
-                        promise={startLocation.then(startLocation => (
-                          <Location
-                            isTruncated={isStartLocationTruncated}
-                            location={startLocation}
-                          />
-                        ))}
+                        promise={startLocation
+                          .then(startLocation => (
+                            <Location
+                              isTruncated={isStartLocationTruncated}
+                              location={startLocation}
+                            />
+                          ))
+                          .catch(err => {
+                            console.log("Error loading start location", err);
+                            return "Error loading location";
+                          })}
                         fallback="loading..."
                       />
                     </span>
@@ -95,12 +100,17 @@ export default class App extends React.Component<{}, AppState> {
                     End location:{" "}
                     <span className="Value">
                       <RenderablePromise
-                        promise={startLocation.then(startLocation => (
-                          <Location
-                            isTruncated={isStartLocationTruncated}
-                            location={startLocation}
-                          />
-                        ))}
+                        promise={endLocation
+                          .then(endLocation => (
+                            <Location
+                              isTruncated={isEndLocationTruncated}
+                              location={endLocation}
+                            />
+                          ))
+                          .catch(err => {
+                            console.log("Error loading end location", err);
+                            return "Error loading location";
+                          })}
                         fallback="loading..."
                       />
                     </span>

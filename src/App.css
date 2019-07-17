@@ -32,13 +32,12 @@
 
 .ActivityOverview {
   background-color: #f58404;
-  position: absolute;
   width: 100vw;
   font-size: calc(0.06 * var(--minor-axis));
 }
 
 .Entry {
-  margin: calc(0.02 * var(--minor-axis)) 0 calc(0.02 * var(--minor-axis))
+  padding: calc(0.02 * var(--minor-axis)) 0 calc(0.02 * var(--minor-axis))
     calc(0.01 * var(--minor-axis));
 }
 

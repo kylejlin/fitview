@@ -66,7 +66,7 @@ export function zeroPad(value: any, minWidth: number): string {
   }
 }
 
-export function reverseGeocode(lat: number, lon: number): Promise<string> {
+export function reverseGeocode(lat: number, lon: number): Promise<Address> {
   return new Promise((resolve, reject) => {
     geocoder()
       .reverse(lon, lat)
@@ -74,8 +74,41 @@ export function reverseGeocode(lat: number, lon: number): Promise<string> {
         if (err) {
           reject(err);
         } else {
-          resolve(result.display_name);
+          console.log(result);
+          resolve(result);
         }
       });
   });
+}
+
+export interface Address {
+  address: {
+    city?: string;
+    country?: string;
+    county?: string;
+    house_number?: string;
+    neighbourhood?: string;
+    postcode?: string;
+    road?: string;
+    state?: string;
+    supermarket?: string;
+  };
+  display_name: string;
+}
+
+// Actually returns a `string`, but I used `any` to appease the compiler
+//   which doesn't accept functional components returning strings.
+// When this TypeScript bug is fixed, feel free to replace `...): any` with `...): string`.
+export function Location({
+  isTruncated,
+  location
+}: {
+  isTruncated: boolean;
+  location: Address;
+}): any {
+  if (!isTruncated) {
+    return location.display_name;
+  } else {
+    return location.address.city + ", " + location.address.state;
+  }
 }

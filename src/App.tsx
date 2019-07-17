@@ -13,7 +13,9 @@ import {
   monthString,
   getTime,
   getActivityDuration,
-  reverseGeocode
+  reverseGeocode,
+  Address,
+  Location
 } from "./helpers";
 
 export default class App extends React.Component<{}, AppState> {
@@ -45,7 +47,13 @@ export default class App extends React.Component<{}, AppState> {
               Upload .fit file
             </label>
           ),
-          some: ({ location, file }) => {
+          some: ({
+            startLocation,
+            isStartLocationTruncated,
+            endLocation,
+            isEndLocationTruncated,
+            file
+          }) => {
             console.log(file);
 
             const records = getActivityRecords(file.activity);
@@ -68,10 +76,31 @@ export default class App extends React.Component<{}, AppState> {
                       {startDate.getDate()} {monthString(startDate.getMonth())}{" "}
                       {startDate.getFullYear()}
                     </span>
-                    Location:{" "}
+                  </div>
+                  <div className="Entry">
+                    Start location:{" "}
                     <span className="Value">
                       <RenderablePromise
-                        promise={location}
+                        promise={startLocation.then(startLocation => (
+                          <Location
+                            isTruncated={isStartLocationTruncated}
+                            location={startLocation}
+                          />
+                        ))}
+                        fallback="loading..."
+                      />
+                    </span>
+                  </div>
+                  <div className="Entry">
+                    End location:{" "}
+                    <span className="Value">
+                      <RenderablePromise
+                        promise={startLocation.then(startLocation => (
+                          <Location
+                            isTruncated={isStartLocationTruncated}
+                            location={startLocation}
+                          />
+                        ))}
                         fallback="loading..."
                       />
                     </span>
@@ -116,12 +145,21 @@ export default class App extends React.Component<{}, AppState> {
               throw error;
             } else {
               const firstSession = data.activity.sessions[0];
+              const records = getActivityRecords(data.activity);
+              const endRecord = records[records.length - 1];
+
               this.setState({
                 activity: Option.some({
-                  location: reverseGeocode(
+                  startLocation: reverseGeocode(
                     firstSession.start_position_lat,
                     firstSession.start_position_long
                   ),
+                  isStartLocationTruncated: true,
+                  endLocation: reverseGeocode(
+                    endRecord.position_lat,
+                    endRecord.position_long
+                  ),
+                  isEndLocationTruncated: true,
                   file: data
                 })
               });
@@ -139,6 +177,9 @@ interface AppState {
 }
 
 interface Activity {
-  location: Promise<string>;
+  startLocation: Promise<Address>;
+  isStartLocationTruncated: boolean;
+  endLocation: Promise<Address>;
+  isEndLocationTruncated: boolean;
   file: any;
 }

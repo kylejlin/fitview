@@ -85,6 +85,13 @@ export function reverseGeocode(lat: number, lon: number): Promise<Address> {
   });
 }
 
+export function lerpDate(start: Date, end: Date, factor: number): Date {
+  const startMil = start.getTime();
+  const endMil = end.getTime();
+  const lerpMil = startMil + (endMil - startMil) * factor;
+  return new Date(lerpMil);
+}
+
 export interface Address {
   address: {
     city?: string;

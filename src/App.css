@@ -5,6 +5,11 @@
   position: absolute;
   left: 0;
   top: 0;
+  --orange: #f58404;
+}
+
+.ActivityView {
+  height: 100vh;
 }
 
 .UploadButton {
@@ -45,4 +50,21 @@
 .Value {
   color: #eee;
   font-weight: bold;
+}
+
+.Timeline {
+  background-color: #ddd;
+  width: 90vw;
+  --height: 10px;
+  height: var(--height);
+  border-radius: var(--height);
+  position: relative;
+  left: 5vw;
+  margin-top: var(--height);
+}
+
+.TimeCursor {
+  height: var(--height);
+  background-color: var(--orange);
+  border-radius: var(--height);
 }

@@ -48,9 +48,13 @@ export function getTime(date: Date): string {
 }
 
 export function getActivityDuration(activity: any): string {
-  const hours = Math.floor(activity.total_timer_time / 3600);
-  const minutes = Math.floor((activity.total_timer_time % 3600) / 60);
-  const seconds = Math.floor(activity.total_timer_time % 60);
+  return getDurationFromMillis(activity);
+}
+
+export function getDurationFromMillis(millis: number): string {
+  const hours = Math.floor(millis / 3600);
+  const minutes = Math.floor((millis % 3600) / 60);
+  const seconds = Math.floor(millis % 60);
   return (
     zeroPad(hours, 2) + ":" + zeroPad(minutes, 2) + ":" + zeroPad(seconds, 2)
   );
@@ -94,4 +98,8 @@ export interface Address {
     supermarket?: string;
   };
   display_name: string;
+}
+
+export function sum(numbers: number[]): number {
+  return numbers.reduce((total, n) => total + n, 0);
 }

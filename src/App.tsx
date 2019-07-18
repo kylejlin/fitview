@@ -6,6 +6,7 @@ import Location from "./components/Location";
 
 import { EasyFit } from "./lib";
 
+import { getActivity, Activity } from "./getActivity";
 import Option from "./Option";
 import Qprom from "./Qprom";
 import {
@@ -14,7 +15,7 @@ import {
   dayOfWeekString,
   monthString,
   getTime,
-  getActivityDuration,
+  getDurationFromMillis,
   reverseGeocode,
   Address
 } from "./helpers";
@@ -57,17 +58,21 @@ export default class App extends React.Component<{}, AppState> {
             </label>
           ),
           some: ({
+            activity,
+
             startLocation,
             isStartLocationTruncated,
             endLocation,
-            isEndLocationTruncated,
-            file
+            isEndLocationTruncated
           }) => {
-            console.log(file);
+            console.log(activity);
 
-            const records = getActivityRecords(file.activity);
-            const startDate = records[0].timestamp;
-            const endDate = records[records.length - 1].timestamp;
+            const {
+              sport,
+              total_elapsed_time,
+              start_time: startTime,
+              end_time: endTime
+            } = activity;
 
             return (
               <div className="File">
@@ -75,15 +80,15 @@ export default class App extends React.Component<{}, AppState> {
                   <div className="Entry">
                     Sport:{" "}
                     <span className="Value">
-                      {capitalizeFirstLetter(file.sport.sport)}
+                      {capitalizeFirstLetter(sport)}
                     </span>
                   </div>
                   <div className="Entry">
                     Date:{" "}
                     <span className="Value">
-                      {dayOfWeekString(startDate.getDay())}{" "}
-                      {startDate.getDate()} {monthString(startDate.getMonth())}{" "}
-                      {startDate.getFullYear()}
+                      {dayOfWeekString(startTime.getDay())}{" "}
+                      {startTime.getDate()} {monthString(startTime.getMonth())}{" "}
+                      {startTime.getFullYear()}
                     </span>
                   </div>
                   <div className="Entry">
@@ -139,11 +144,11 @@ export default class App extends React.Component<{}, AppState> {
                   <div className="Entry">
                     Total duration:{" "}
                     <span className="Value">
-                      {getActivityDuration(file.activity)}
+                      {getDurationFromMillis(total_elapsed_time)}
                     </span>{" "}
                     Start time:{" "}
-                    <span className="Value">{getTime(startDate)}</span> End
-                    time: <span className="Value">{getTime(endDate)}</span>
+                    <span className="Value">{getTime(startTime)}</span> End
+                    time: <span className="Value">{getTime(endTime)}</span>
                   </div>
                 </div>
               </div>
@@ -179,30 +184,26 @@ export default class App extends React.Component<{}, AppState> {
               const records = getActivityRecords(data.activity);
               const endRecord = records[records.length - 1];
 
-              this.setState(
-                {
-                  activity: Option.some({
-                    startLocation: Qprom.fromPromise(
-                      reverseGeocode(
-                        firstSession.start_position_lat,
-                        firstSession.start_position_long
-                      )
-                    ),
-                    isStartLocationTruncated: true,
-                    endLocation: Qprom.fromPromise(
-                      reverseGeocode(
-                        endRecord.position_lat,
-                        endRecord.position_long
-                      )
-                    ),
-                    isEndLocationTruncated: true,
-                    file: data
-                  })
-                },
-                () => {
-                  console.log("done setting state");
-                }
-              );
+              this.setState({
+                activity: Option.some({
+                  activity: getActivity(data),
+
+                  startLocation: Qprom.fromPromise(
+                    reverseGeocode(
+                      firstSession.start_position_lat,
+                      firstSession.start_position_long
+                    )
+                  ),
+                  isStartLocationTruncated: true,
+                  endLocation: Qprom.fromPromise(
+                    reverseGeocode(
+                      endRecord.position_lat,
+                      endRecord.position_long
+                    )
+                  ),
+                  isEndLocationTruncated: true
+                })
+              });
             }
           });
         }
@@ -231,13 +232,14 @@ export default class App extends React.Component<{}, AppState> {
 }
 
 interface AppState {
-  activity: Option<Activity>;
+  activity: Option<ActivityViewState>;
 }
 
-interface Activity {
+interface ActivityViewState {
+  activity: Activity;
+
   startLocation: Qprom<Address>;
   isStartLocationTruncated: boolean;
   endLocation: Qprom<Address>;
   isEndLocationTruncated: boolean;
-  file: any;
 }

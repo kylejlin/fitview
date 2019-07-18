@@ -35,6 +35,9 @@ export default class App extends React.Component<{}, AppState> {
     this.toggleIsStartLocationTruncated = this.toggleIsStartLocationTruncated.bind(
       this
     );
+    this.toggleIsEndLocationTruncated = this.toggleIsEndLocationTruncated.bind(
+      this
+    );
   }
 
   render() {

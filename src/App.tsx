@@ -18,6 +18,7 @@ import {
   getDurationFromMillis,
   reverseGeocode,
   lerpDate,
+  getOffset,
   Address
 } from "./helpers";
 
@@ -245,7 +246,8 @@ export default class App extends React.Component<{}, AppState> {
                   ),
                   isEndLocationTruncated: true,
 
-                  timeCursor: activity.start_time
+                  timeCursor: activity.start_time,
+                  offset: 0
                 })
               });
             }
@@ -310,16 +312,23 @@ export default class App extends React.Component<{}, AppState> {
         1,
         Math.max(0, rawCompletionFactor)
       );
-      this.setState(state => ({
-        activity: state.activity.map(state => ({
-          ...state,
-          timeCursor: lerpDate(
-            state.activity.start_time,
-            state.activity.end_time,
-            clampedCompletionFactor
-          )
-        }))
-      }));
+      this.setState(
+        state => ({
+          activity: state.activity.map(state => {
+            const timeCursor = lerpDate(
+              state.activity.start_time,
+              state.activity.end_time,
+              clampedCompletionFactor
+            );
+            return {
+              ...state,
+              timeCursor,
+              offset: getOffset(state.activity.records, timeCursor)
+            };
+          })
+        }),
+        () => console.log(this.state.activity.unwrapOr("None"))
+      );
     }
   }
 }
@@ -339,4 +348,5 @@ interface ActivityViewState {
   isEndLocationTruncated: boolean;
 
   timeCursor: Date;
+  offset: number;
 }

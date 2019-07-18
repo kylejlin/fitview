@@ -10,7 +10,7 @@ export function getActivity(rawFile: any): Activity {
   const total_elapsed_time = sum(
     sessions.map(session => session.total_elapsed_time)
   );
-  const start_time = activity.timestamp;
+  const start_time = records[0].timestamp;
   const end_time = records[records.length - 1].timestamp;
 
   return {
@@ -30,17 +30,22 @@ function getSession(rawSession: any): Session {
   const session = { ...rawSession };
   session.laps = session.laps.map(getLap);
   session.records = session.laps.map((lap: Lap) => lap.records).flat();
+  session.start_time = session.records[0].timestamp;
+  session.end_time = session.records[session.records.length - 1].timestamp;
   return session;
 }
 
 function getLap(rawLap: any): Lap {
   const lap = { ...rawLap };
   lap.records = lap.records.slice();
+  lap.start_time = lap.records[0].timestamp;
+  lap.end_time = lap.records[lap.records.length - 1].timestamp;
   return lap;
 }
 
 export interface Activity {
-  timestamp: Date;
+  start_time: Date;
+  end_time: Date;
 
   sport: string;
   sessions: Session[];
@@ -50,13 +55,12 @@ export interface Activity {
   total_distance: number;
   total_elapsed_time: number;
   total_timer_time: number;
-
-  start_time: Date;
-  end_time: Date;
 }
 
 export interface Session {
-  timestamp: Date;
+  start_time: Date;
+  end_time: Date;
+
   laps: Lap[];
   records: Record[];
 
@@ -78,7 +82,9 @@ export interface Session {
 }
 
 export interface Lap {
-  timestamp: Date;
+  start_time: Date;
+  end_time: Date;
+
   records: Record[];
 
   avg_cadence: number;

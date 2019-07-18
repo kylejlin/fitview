@@ -1,4 +1,5 @@
 import { geocoder } from "./lib";
+import { Record } from "./getActivity";
 
 export function getActivityRecords(activity: any): any[] {
   return activity.sessions
@@ -90,6 +91,18 @@ export function lerpDate(start: Date, end: Date, factor: number): Date {
   const endMil = end.getTime();
   const lerpMil = startMil + (endMil - startMil) * factor;
   return new Date(lerpMil);
+}
+
+export function getOffset(records: Record[], cursor: Date): number {
+  const cursorMil = cursor.getTime();
+  const { length } = records;
+  for (let i = 0; i < length; i++) {
+    const { timestamp } = records[i];
+    if (timestamp.getTime() >= cursorMil) {
+      return i;
+    }
+  }
+  return length - 1;
 }
 
 export interface Address {

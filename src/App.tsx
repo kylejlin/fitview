@@ -18,13 +18,13 @@ import {
   getDurationFromMillis,
   reverseGeocode,
   lerpDate,
-  getOffset,
+  getOffsetIndex,
   Address
 } from "./helpers";
 
 export default class App extends React.Component<{}, AppState> {
   private fileRef: React.RefObject<HTMLInputElement>;
-  private timelineRef: React.RefObject<HTMLDivElement>;
+  private minimapRef: React.RefObject<HTMLDivElement>;
 
   constructor(props: object) {
     super(props);
@@ -32,7 +32,7 @@ export default class App extends React.Component<{}, AppState> {
     this.state = { activity: Option.none(), isCursorDragged: false };
 
     this.fileRef = React.createRef();
-    this.timelineRef = React.createRef();
+    this.minimapRef = React.createRef();
 
     this.forceUpdate = this.forceUpdate.bind(this);
 
@@ -44,7 +44,7 @@ export default class App extends React.Component<{}, AppState> {
       this
     );
     this.onFileViewClick = this.onFileViewClick.bind(this);
-    this.onTimelineMouseDown = this.onTimelineMouseDown.bind(this);
+    this.onMinimapMouseDown = this.onMinimapMouseDown.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onTimelineContainerClick = this.onTimelineContainerClick.bind(this);
@@ -79,7 +79,7 @@ export default class App extends React.Component<{}, AppState> {
             endLocation,
             isEndLocationTruncated,
 
-            timeCursor
+            offsetTime
           }) => {
             const {
               sport,
@@ -112,16 +112,16 @@ export default class App extends React.Component<{}, AppState> {
                         </span>
                       </div>
                       <div
-                        className="Timeline"
-                        onMouseDown={this.onTimelineMouseDown}
-                        ref={this.timelineRef}
+                        className="MinimapBackground"
+                        onMouseDown={this.onMinimapMouseDown}
+                        ref={this.minimapRef}
                       >
                         <div
-                          className="TimeCursor"
+                          className="MinimapForeground"
                           style={{
                             width:
                               (100 *
-                                (timeCursor.getTime() - startTime.getTime())) /
+                                (offsetTime.getTime() - startTime.getTime())) /
                                 (endTime.getTime() - startTime.getTime()) +
                               "%"
                           }}
@@ -262,8 +262,8 @@ export default class App extends React.Component<{}, AppState> {
                   ),
                   isEndLocationTruncated: true,
 
-                  timeCursor: activity.start_time,
-                  offset: 0
+                  offsetTime: activity.start_time,
+                  offsetIndex: 0
                 })
               });
             }
@@ -303,7 +303,7 @@ export default class App extends React.Component<{}, AppState> {
     }
   }
 
-  onTimelineMouseDown() {
+  onMinimapMouseDown() {
     this.setState({
       isCursorDragged: true
     });
@@ -318,10 +318,10 @@ export default class App extends React.Component<{}, AppState> {
   onMouseMove(event: React.MouseEvent<HTMLDivElement>) {
     if (
       this.state.isCursorDragged &&
-      this.timelineRef &&
-      this.timelineRef.current
+      this.minimapRef &&
+      this.minimapRef.current
     ) {
-      const rect = this.timelineRef.current.getBoundingClientRect();
+      const rect = this.minimapRef.current.getBoundingClientRect();
       const dx = event.clientX - rect.left;
       const rawCompletionFactor = dx / rect.width;
       const clampedCompletionFactor = Math.min(
@@ -331,15 +331,15 @@ export default class App extends React.Component<{}, AppState> {
       this.setState(
         state => ({
           activity: state.activity.map(state => {
-            const timeCursor = lerpDate(
+            const offsetTime = lerpDate(
               state.activity.start_time,
               state.activity.end_time,
               clampedCompletionFactor
             );
             return {
               ...state,
-              timeCursor,
-              offset: getOffset(state.activity.records, timeCursor)
+              offsetTime,
+              offsetIndex: getOffsetIndex(state.activity.records, offsetTime)
             };
           })
         }),
@@ -349,7 +349,11 @@ export default class App extends React.Component<{}, AppState> {
   }
 
   onTimelineContainerClick(event: React.MouseEvent) {
-    if (!(event.target as Element).classList.contains("Timeline")) {
+    const { classList } = event.target as Element;
+    if (
+      !classList.contains("MinimapBackground") &&
+      !classList.contains("MinimapForeground")
+    ) {
       this.setState(state => ({
         ...state,
         activity: state.activity.map(state => ({
@@ -375,6 +379,6 @@ interface ActivityViewState {
   endLocation: Qprom<Address>;
   isEndLocationTruncated: boolean;
 
-  timeCursor: Date;
-  offset: number;
+  offsetTime: Date;
+  offsetIndex: number;
 }

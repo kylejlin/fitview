@@ -93,8 +93,8 @@ export function lerpDate(start: Date, end: Date, factor: number): Date {
   return new Date(lerpMil);
 }
 
-export function getOffset(records: Record[], cursor: Date): number {
-  const cursorMil = cursor.getTime();
+export function getOffsetIndex(records: Record[], offsetTime: Date): number {
+  const cursorMil = offsetTime.getTime();
   const { length } = records;
   for (let i = 0; i < length; i++) {
     const { timestamp } = records[i];

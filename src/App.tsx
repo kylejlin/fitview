@@ -98,6 +98,16 @@ export default class App extends React.Component<{}, AppState> {
                     >
                       <div className="Entry">
                         <span className="Value">
+                          {monthString(startTime.getMonth()) +
+                            " " +
+                            startTime.getDate() +
+                            " "}
+                          {startLocation.match({
+                            onUpdate: this.forceUpdate,
+                            pending: () => "",
+                            fulfilled: location => location.address.city + " ",
+                            rejected: () => ""
+                          })}
                           {capitalizeFirstLetter(sport)}
                         </span>
                       </div>

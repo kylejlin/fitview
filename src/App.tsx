@@ -1,14 +1,13 @@
 import React from "react";
 import "./App.css";
 
-import RenderablePromise from "./RenderablePromise";
-
 import ExpandButton from "./components/ExpandButton";
 import Location from "./components/Location";
 
 import { EasyFit } from "./lib";
 
 import Option from "./Option";
+import Qprom from "./Qprom";
 import {
   getActivityRecords,
   capitalizeFirstLetter,
@@ -29,6 +28,8 @@ export default class App extends React.Component<{}, AppState> {
     this.state = { activity: Option.none() };
 
     this.fileRef = React.createRef();
+
+    this.forceUpdate = this.forceUpdate.bind(this);
 
     this.handleUpload = this.handleUpload.bind(this);
     this.toggleIsStartLocationTruncated = this.toggleIsStartLocationTruncated.bind(
@@ -85,45 +86,51 @@ export default class App extends React.Component<{}, AppState> {
                   <div className="Entry">
                     Start location:{" "}
                     <span className="Value">
-                      <RenderablePromise
-                        promise={startLocation
-                          .then(startLocation => (
-                            <>
-                              <ExpandButton
-                                isExpanded={!isStartLocationTruncated}
-                                onClick={this.toggleIsStartLocationTruncated}
-                              />
-                              <Location
-                                isTruncated={isStartLocationTruncated}
-                                location={startLocation}
-                              />
-                            </>
-                          ))
-                          .catch(err => {
-                            console.log("Error loading start location", err);
-                            return "Error loading location";
-                          })}
-                        fallback="loading..."
-                      />
+                      {startLocation.match({
+                        pending: () => "loading",
+                        fulfilled: startLocation => (
+                          <>
+                            <ExpandButton
+                              isExpanded={!isStartLocationTruncated}
+                              onClick={this.toggleIsStartLocationTruncated}
+                            />
+                            <Location
+                              isTruncated={isStartLocationTruncated}
+                              location={startLocation}
+                            />
+                          </>
+                        ),
+                        rejected: err => {
+                          console.log("Error loading start location", err);
+                          return "Error loading location";
+                        },
+                        onUpdate: this.forceUpdate
+                      })}
                     </span>
                   </div>
                   <div className="Entry">
                     End location:{" "}
                     <span className="Value">
-                      <RenderablePromise
-                        promise={endLocation
-                          .then(endLocation => (
+                      {endLocation.match({
+                        pending: () => "loading",
+                        fulfilled: endLocation => (
+                          <>
+                            <ExpandButton
+                              isExpanded={!isEndLocationTruncated}
+                              onClick={this.toggleIsEndLocationTruncated}
+                            />
                             <Location
                               isTruncated={isEndLocationTruncated}
                               location={endLocation}
                             />
-                          ))
-                          .catch(err => {
-                            console.log("Error loading end location", err);
-                            return "Error loading location";
-                          })}
-                        fallback="loading..."
-                      />
+                          </>
+                        ),
+                        rejected: err => {
+                          console.log("Error loading start location", err);
+                          return "Error loading location";
+                        },
+                        onUpdate: this.forceUpdate
+                      })}
                     </span>
                   </div>
                   <div className="Entry">
@@ -169,21 +176,30 @@ export default class App extends React.Component<{}, AppState> {
               const records = getActivityRecords(data.activity);
               const endRecord = records[records.length - 1];
 
-              this.setState({
-                activity: Option.some({
-                  startLocation: reverseGeocode(
-                    firstSession.start_position_lat,
-                    firstSession.start_position_long
-                  ),
-                  isStartLocationTruncated: true,
-                  endLocation: reverseGeocode(
-                    endRecord.position_lat,
-                    endRecord.position_long
-                  ),
-                  isEndLocationTruncated: true,
-                  file: data
-                })
-              });
+              this.setState(
+                {
+                  activity: Option.some({
+                    startLocation: Qprom.fromPromise(
+                      reverseGeocode(
+                        firstSession.start_position_lat,
+                        firstSession.start_position_long
+                      )
+                    ),
+                    isStartLocationTruncated: true,
+                    endLocation: Qprom.fromPromise(
+                      reverseGeocode(
+                        endRecord.position_lat,
+                        endRecord.position_long
+                      )
+                    ),
+                    isEndLocationTruncated: true,
+                    file: data
+                  })
+                },
+                () => {
+                  console.log("done setting state");
+                }
+              );
             }
           });
         }
@@ -200,6 +216,15 @@ export default class App extends React.Component<{}, AppState> {
       }))
     }));
   }
+
+  toggleIsEndLocationTruncated() {
+    this.setState(state => ({
+      activity: state.activity.map(activity => ({
+        ...activity,
+        isEndLocationTruncated: !activity.isEndLocationTruncated
+      }))
+    }));
+  }
 }
 
 interface AppState {
@@ -207,9 +232,9 @@ interface AppState {
 }
 
 interface Activity {
-  startLocation: Promise<Address>;
+  startLocation: Qprom<Address>;
   isStartLocationTruncated: boolean;
-  endLocation: Promise<Address>;
+  endLocation: Qprom<Address>;
   isEndLocationTruncated: boolean;
   file: any;
 }

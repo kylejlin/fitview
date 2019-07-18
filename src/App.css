@@ -52,6 +52,13 @@
   font-weight: bold;
 }
 
+.TimelineContainer {
+  background-color: #111;
+  width: 100vw;
+  font-size: calc(0.06 * var(--minor-axis));
+  padding-bottom: 10px;
+}
+
 .Timeline {
   background-color: #ddd;
   width: 90vw;

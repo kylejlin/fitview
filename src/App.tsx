@@ -47,6 +47,7 @@ export default class App extends React.Component<{}, AppState> {
     this.onTimelineMouseDown = this.onTimelineMouseDown.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
+    this.onTimelineContainerClick = this.onTimelineContainerClick.bind(this);
   }
 
   render() {
@@ -91,10 +92,15 @@ export default class App extends React.Component<{}, AppState> {
               <div className="ActivityView" onClick={this.onFileViewClick}>
                 {isOverviewTruncated ? (
                   <>
-                    <div className="ActivityOverview">
-                      <span className="Value">
-                        {capitalizeFirstLetter(sport)}
-                      </span>
+                    <div
+                      className="TimelineContainer"
+                      onClick={this.onTimelineContainerClick}
+                    >
+                      <div className="Entry">
+                        <span className="Value">
+                          {capitalizeFirstLetter(sport)}
+                        </span>
+                      </div>
                       <div
                         className="Timeline"
                         onMouseDown={this.onTimelineMouseDown}
@@ -329,6 +335,18 @@ export default class App extends React.Component<{}, AppState> {
         }),
         () => console.log(this.state.activity.unwrapOr("None"))
       );
+    }
+  }
+
+  onTimelineContainerClick(event: React.MouseEvent) {
+    if (!(event.target as Element).classList.contains("Timeline")) {
+      this.setState(state => ({
+        ...state,
+        activity: state.activity.map(state => ({
+          ...state,
+          isOverviewTruncated: false
+        }))
+      }));
     }
   }
 }

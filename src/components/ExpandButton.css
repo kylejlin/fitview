@@ -1,3 +1,14 @@
 .ExpandButton {
   background-color: #ccc;
+  border: none;
+  --height: calc(0.05 * var(--minor-axis));
+  height: var(--height);
+  width: calc(1.6 * var(--height));
+  border-radius: calc(1 * var(--height));
+  font-size: calc(0.6 * var(--height));
+  text-align: center;
+  vertical-align: middle;
+  padding: 0;
+  margin: calc(0.1 * var(--height));
+  outline: none;
 }

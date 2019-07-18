@@ -19,6 +19,6 @@ function toggleText(isExpanded: boolean): string {
   if (isExpanded) {
     return "▶◀";
   } else {
-    return "...";
+    return "◀▶";
   }
 }

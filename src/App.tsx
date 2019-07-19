@@ -4,7 +4,7 @@ import "./App.css";
 import ExpandButton from "./components/ExpandButton";
 import Location from "./components/Location";
 
-import { EasyFit } from "./lib";
+import { isOrIsAncestorOf, EasyFit } from "./lib";
 
 import { getActivity, Activity } from "./getActivity";
 import Option from "./Option";
@@ -24,14 +24,16 @@ import {
 
 export default class App extends React.Component<{}, AppState> {
   private fileRef: React.RefObject<HTMLInputElement>;
+  private timelineContainerRef: React.RefObject<HTMLDivElement>;
   private minimapRef: React.RefObject<HTMLDivElement>;
 
   constructor(props: object) {
     super(props);
 
-    this.state = { activity: Option.none(), isCursorDragged: false };
+    this.state = { activity: Option.none(), mouseDownTarget: Option.none() };
 
     this.fileRef = React.createRef();
+    this.timelineContainerRef = React.createRef();
     this.minimapRef = React.createRef();
 
     this.forceUpdate = this.forceUpdate.bind(this);
@@ -44,16 +46,16 @@ export default class App extends React.Component<{}, AppState> {
       this
     );
     this.onFileViewClick = this.onFileViewClick.bind(this);
-    this.onMinimapMouseDown = this.onMinimapMouseDown.bind(this);
+    this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
-    this.onTimelineContainerClick = this.onTimelineContainerClick.bind(this);
   }
 
   render() {
     return (
       <div
         className="App"
+        onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
         onMouseUp={this.onMouseUp}
       >
@@ -94,7 +96,7 @@ export default class App extends React.Component<{}, AppState> {
                   <>
                     <div
                       className="TimelineContainer"
-                      onClick={this.onTimelineContainerClick}
+                      ref={this.timelineContainerRef}
                     >
                       <div className="Entry">
                         <span className="Value">
@@ -111,11 +113,7 @@ export default class App extends React.Component<{}, AppState> {
                           {capitalizeFirstLetter(sport)}
                         </span>
                       </div>
-                      <div
-                        className="MinimapBackground"
-                        onMouseDown={this.onMinimapMouseDown}
-                        ref={this.minimapRef}
-                      >
+                      <div className="MinimapBackground" ref={this.minimapRef}>
                         <div
                           className="MinimapForeground"
                           style={{
@@ -224,7 +222,7 @@ export default class App extends React.Component<{}, AppState> {
         if (reader.error) {
           throw reader.error;
         } else {
-          const buffer = reader.result;
+          const buffer = reader.result as ArrayBuffer;
           new EasyFit({
             force: true,
             speedUnit: "km/h",
@@ -293,6 +291,7 @@ export default class App extends React.Component<{}, AppState> {
   }
 
   onFileViewClick(event: React.MouseEvent<HTMLDivElement>) {
+    console.log("tar", event.target, this.state.mouseDownTarget);
     if ((event.target as Element).classList.contains("ActivityView")) {
       this.setState(state => ({
         activity: state.activity.map(activity => ({
@@ -303,24 +302,44 @@ export default class App extends React.Component<{}, AppState> {
     }
   }
 
-  onMinimapMouseDown() {
+  onMouseDown(event: React.MouseEvent<HTMLDivElement>) {
     this.setState({
-      isCursorDragged: true
+      mouseDownTarget: Option.some(event.target as Element)
     });
   }
 
-  onMouseUp() {
-    this.setState({
-      isCursorDragged: false
+  onMouseUp(event: React.MouseEvent<HTMLDivElement>) {
+    const { timelineContainerRef, minimapRef } = this;
+    const target = event.target as Element | null;
+    this.setState(state => {
+      const isTargetDescendantOfTimelineContainer = !!(
+        timelineContainerRef &&
+        timelineContainerRef.current &&
+        target &&
+        isOrIsAncestorOf(timelineContainerRef.current, target)
+      );
+      const wasMinimapBeingDragged = !!state.mouseDownTarget.match({
+        none: () => false,
+        some: target =>
+          minimapRef &&
+          minimapRef.current &&
+          isOrIsAncestorOf(minimapRef.current, target)
+      });
+      const shouldExpandOverview =
+        isTargetDescendantOfTimelineContainer && !wasMinimapBeingDragged;
+      return {
+        ...state,
+        mouseDownTarget: Option.none(),
+        activity: state.activity.map(state => ({
+          ...state,
+          isOverviewTruncated: !shouldExpandOverview
+        }))
+      };
     });
   }
 
   onMouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (
-      this.state.isCursorDragged &&
-      this.minimapRef &&
-      this.minimapRef.current
-    ) {
+    if (this.isCursorDragged() && this.minimapRef && this.minimapRef.current) {
       const rect = this.minimapRef.current.getBoundingClientRect();
       const dx = event.clientX - rect.left;
       const rawCompletionFactor = dx / rect.width;
@@ -328,46 +347,40 @@ export default class App extends React.Component<{}, AppState> {
         1,
         Math.max(0, rawCompletionFactor)
       );
-      this.setState(
-        state => ({
-          activity: state.activity.map(state => {
-            const offsetTime = lerpDate(
-              state.activity.start_time,
-              state.activity.end_time,
-              clampedCompletionFactor
-            );
-            return {
-              ...state,
-              offsetTime,
-              offsetIndex: getOffsetIndex(state.activity.records, offsetTime)
-            };
-          })
-        }),
-        () => console.log(this.state.activity.unwrapOr("None"))
-      );
+      this.setState(state => ({
+        activity: state.activity.map(state => {
+          const offsetTime = lerpDate(
+            state.activity.start_time,
+            state.activity.end_time,
+            clampedCompletionFactor
+          );
+          return {
+            ...state,
+            offsetTime,
+            offsetIndex: getOffsetIndex(state.activity.records, offsetTime)
+          };
+        })
+      }));
     }
   }
 
-  onTimelineContainerClick(event: React.MouseEvent) {
-    const { classList } = event.target as Element;
-    if (
-      !classList.contains("MinimapBackground") &&
-      !classList.contains("MinimapForeground")
-    ) {
-      this.setState(state => ({
-        ...state,
-        activity: state.activity.map(state => ({
-          ...state,
-          isOverviewTruncated: false
-        }))
-      }));
-    }
+  isCursorDragged(): boolean {
+    const { minimapRef } = this;
+    return this.state.mouseDownTarget.match({
+      none: () => false,
+      some: target =>
+        !!(
+          minimapRef &&
+          minimapRef.current &&
+          isOrIsAncestorOf(minimapRef.current, target)
+        )
+    });
   }
 }
 
 interface AppState {
   activity: Option<ActivityViewState>;
-  isCursorDragged: boolean;
+  mouseDownTarget: Option<Element>;
 }
 
 interface ActivityViewState {

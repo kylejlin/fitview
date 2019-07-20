@@ -24,7 +24,7 @@ import {
 
 export default class App extends React.Component<{}, AppState> {
   private fileRef: React.RefObject<HTMLInputElement>;
-  private timelineContainerRef: React.RefObject<HTMLDivElement>;
+  private minimapContainerRef: React.RefObject<HTMLDivElement>;
   private minimapRef: React.RefObject<HTMLDivElement>;
 
   constructor(props: object) {
@@ -33,7 +33,7 @@ export default class App extends React.Component<{}, AppState> {
     this.state = { activity: Option.none(), mouseDownTarget: Option.none() };
 
     this.fileRef = React.createRef();
-    this.timelineContainerRef = React.createRef();
+    this.minimapContainerRef = React.createRef();
     this.minimapRef = React.createRef();
 
     this.forceUpdate = this.forceUpdate.bind(this);
@@ -81,10 +81,13 @@ export default class App extends React.Component<{}, AppState> {
             endLocation,
             isEndLocationTruncated,
 
-            offsetTime
+            offsetTime,
+            offsetIndex,
+            width
           }) => {
             const {
               sport,
+              records,
               total_elapsed_time,
               start_time: startTime,
               end_time: endTime
@@ -94,36 +97,59 @@ export default class App extends React.Component<{}, AppState> {
               <div className="ActivityView" onClick={this.onFileViewClick}>
                 {isOverviewTruncated ? (
                   <>
-                    <div
-                      className="TimelineContainer"
-                      ref={this.timelineContainerRef}
-                    >
-                      <div className="Entry">
-                        <span className="Value">
-                          {monthString(startTime.getMonth()) +
-                            " " +
-                            startTime.getDate() +
-                            " "}
-                          {startLocation.match({
-                            onUpdate: this.forceUpdate,
-                            pending: () => "",
-                            fulfilled: location => location.address.city + " ",
-                            rejected: () => ""
-                          })}
-                          {capitalizeFirstLetter(sport)}
-                        </span>
-                      </div>
-                      <div className="MinimapBackground" ref={this.minimapRef}>
+                    <div className="TimelineContainer">
+                      <div
+                        className="MinimapContainer"
+                        ref={this.minimapContainerRef}
+                      >
+                        <div className="Entry">
+                          <span className="Value">
+                            {monthString(startTime.getMonth()) +
+                              " " +
+                              startTime.getDate() +
+                              " "}
+                            {startLocation.match({
+                              onUpdate: this.forceUpdate,
+                              pending: () => "",
+                              fulfilled: location =>
+                                location.address.city + " ",
+                              rejected: () => ""
+                            })}
+                            {capitalizeFirstLetter(sport)}
+                          </span>
+                        </div>
                         <div
-                          className="MinimapForeground"
-                          style={{
-                            width:
-                              (100 *
-                                (offsetTime.getTime() - startTime.getTime())) /
-                                (endTime.getTime() - startTime.getTime()) +
-                              "%"
-                          }}
-                        />
+                          className="MinimapBackground"
+                          ref={this.minimapRef}
+                        >
+                          <div
+                            className="MinimapForeground"
+                            style={{
+                              width:
+                                (100 *
+                                  (offsetTime.getTime() -
+                                    startTime.getTime())) /
+                                  (endTime.getTime() - startTime.getTime()) +
+                                "%"
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="TimelineLabel">Heart Rate</div>
+                      <div className="Timeline">
+                        {records
+                          .slice(offsetIndex, offsetIndex + width)
+                          .map((record, i) => (
+                            <div
+                              className="Record"
+                              key={record.index}
+                              style={{
+                                left: 100 * (i / width) + "%",
+                                bottom: 100 * (record.heart_rate / 200) + "%"
+                              }}
+                            />
+                          ))}
                       </div>
                     </div>
                   </>
@@ -261,7 +287,8 @@ export default class App extends React.Component<{}, AppState> {
                   isEndLocationTruncated: true,
 
                   offsetTime: activity.start_time,
-                  offsetIndex: 0
+                  offsetIndex: 0,
+                  width: STARTING_WIDTH
                 })
               });
             }
@@ -291,7 +318,6 @@ export default class App extends React.Component<{}, AppState> {
   }
 
   onFileViewClick(event: React.MouseEvent<HTMLDivElement>) {
-    console.log("tar", event.target, this.state.mouseDownTarget);
     if ((event.target as Element).classList.contains("ActivityView")) {
       this.setState(state => ({
         activity: state.activity.map(activity => ({
@@ -309,14 +335,14 @@ export default class App extends React.Component<{}, AppState> {
   }
 
   onMouseUp(event: React.MouseEvent<HTMLDivElement>) {
-    const { timelineContainerRef, minimapRef } = this;
+    const { minimapContainerRef, minimapRef } = this;
     const target = event.target as Element | null;
     this.setState(state => {
       const isTargetDescendantOfTimelineContainer = !!(
-        timelineContainerRef &&
-        timelineContainerRef.current &&
+        minimapContainerRef &&
+        minimapContainerRef.current &&
         target &&
-        isOrIsAncestorOf(timelineContainerRef.current, target)
+        isOrIsAncestorOf(minimapContainerRef.current, target)
       );
       const wasMinimapBeingDragged = !!state.mouseDownTarget.match({
         none: () => false,
@@ -394,4 +420,7 @@ interface ActivityViewState {
 
   offsetTime: Date;
   offsetIndex: number;
+  width: number;
 }
+
+const STARTING_WIDTH = 87;

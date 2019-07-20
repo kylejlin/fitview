@@ -52,7 +52,7 @@
   font-weight: bold;
 }
 
-.TimelineContainer {
+.MinimapContainer {
   background-color: #111;
   width: 100vw;
   font-size: calc(0.06 * var(--minor-axis));
@@ -74,4 +74,26 @@
   height: var(--height);
   background-color: var(--orange);
   border-radius: var(--height);
+}
+
+.TimelineLabel {
+  color: #eee;
+  padding: calc(0.01 * var(--minor-axis));
+  font-size: calc(0.055 * var(--minor-axis));
+}
+
+.Timeline {
+  background-color: #eeea;
+  width: 100vw;
+  height: calc(0.2 * var(--minor-axis));
+  position: relative;
+}
+
+.Record {
+  background-color: pink;
+  --diameter: calc(0.01 * var(--major-axis));
+  width: var(--diameter);
+  height: var(--diameter);
+  border-radius: var(--diameter);
+  position: absolute;
 }

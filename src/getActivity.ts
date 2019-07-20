@@ -6,6 +6,9 @@ export function getActivity(rawFile: any): Activity {
   const sessions: Session[] = activity.sessions.map(getSession);
   const laps: Lap[] = sessions.map(session => session.laps).flat();
   const records: Record[] = sessions.map(session => session.records).flat();
+  records.forEach((record, i) => {
+    record.index = i;
+  });
   const total_distance = sum(sessions.map(session => session.total_distance));
   const total_elapsed_time = sum(
     sessions.map(session => session.total_elapsed_time)
@@ -105,6 +108,7 @@ export interface Lap {
 }
 
 export interface Record {
+  index: number;
   timestamp: Date;
 
   altitude: number;

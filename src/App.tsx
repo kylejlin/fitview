@@ -1,14 +1,15 @@
 import React from "react";
 import "./App.css";
 
+import { Stage, Layer, Rect, Circle } from "react-konva";
+
 import ExpandButton from "./components/ExpandButton";
 import Location from "./components/Location";
 
 import { isOrIsAncestorOf, EasyFit } from "./lib";
 
+import axes from "./axes";
 import { getActivity, Activity } from "./getActivity";
-import Option from "./Option";
-import Qprom from "./Qprom";
 import {
   getActivityRecords,
   capitalizeFirstLetter,
@@ -21,6 +22,8 @@ import {
   getOffsetIndex,
   Address
 } from "./helpers";
+import Option from "./Option";
+import Qprom from "./Qprom";
 
 export default class App extends React.Component<{}, AppState> {
   private fileRef: React.RefObject<HTMLInputElement>;
@@ -35,6 +38,9 @@ export default class App extends React.Component<{}, AppState> {
     this.fileRef = React.createRef();
     this.minimapContainerRef = React.createRef();
     this.minimapRef = React.createRef();
+
+    window.addEventListener("resize", () => this.forceUpdate());
+    window.addEventListener("orientationchange", () => this.forceUpdate());
 
     this.forceUpdate = this.forceUpdate.bind(this);
 
@@ -143,20 +149,38 @@ export default class App extends React.Component<{}, AppState> {
                       </div>
 
                       <div className="TimelineLabel">Heart Rate</div>
-                      <div className="Timeline">
-                        {records
-                          .slice(offsetIndex, offsetIndex + width)
-                          .map((record, i) => (
-                            <div
-                              className="Record"
-                              key={record.index}
-                              style={{
-                                left: 100 * (i / width) + "%",
-                                bottom: 100 * (record.heart_rate / 200) + "%"
-                              }}
-                            />
-                          ))}
-                      </div>
+                      <Stage
+                        width={window.innerWidth}
+                        height={timelineHeight()}
+                      >
+                        <Layer
+                          width={window.innerWidth}
+                          height={timelineHeight()}
+                        >
+                          <Rect
+                            fill="#eeea"
+                            width={window.innerWidth}
+                            height={timelineHeight()}
+                          />
+                          {records
+                            .slice(offsetIndex, offsetIndex + width)
+                            .map((record, i) => (
+                              <Circle
+                                key={record.index}
+                                fill="pink"
+                                x={
+                                  window.innerWidth * (i / width) +
+                                  recordDotRadius()
+                                }
+                                y={
+                                  timelineHeight() -
+                                  timelineHeight() * (record.heart_rate / 200)
+                                }
+                                radius={recordDotRadius()}
+                              />
+                            ))}
+                        </Layer>
+                      </Stage>
                     </div>
                   </>
                 ) : (
@@ -469,3 +493,11 @@ interface ActivityViewState {
 }
 
 const STARTING_WIDTH = 87;
+
+function timelineHeight(): number {
+  return 0.2 * axes.minor;
+}
+
+function recordDotRadius(): number {
+  return 0.005 * axes.major;
+}

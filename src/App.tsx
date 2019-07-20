@@ -148,7 +148,21 @@ export default class App extends React.Component<{}, AppState> {
                         </div>
                       </div>
 
-                      <div className="TimelineLabel">Heart Rate</div>
+                      <div className="TimelineLabel">
+                        Heart Rate
+                        {(() => {
+                          const record = records[offsetIndex];
+                          if (record) {
+                            return (
+                              <span className="ActiveRecordValue">
+                                {" = " + record.heart_rate}
+                              </span>
+                            );
+                          } else {
+                            return null;
+                          }
+                        })()}
+                      </div>
                       <Stage
                         width={window.innerWidth}
                         height={timelineHeight()}
@@ -167,7 +181,11 @@ export default class App extends React.Component<{}, AppState> {
                             .map((record, i) => (
                               <Circle
                                 key={record.index}
-                                fill="pink"
+                                fill={
+                                  i === 0
+                                    ? ACTIVE_RECORD_DOT_FILL
+                                    : INACTIVE_RECORD_DOT_FILL
+                                }
                                 x={
                                   window.innerWidth * (i / width) +
                                   recordDotRadius()
@@ -493,6 +511,8 @@ interface ActivityViewState {
 }
 
 const STARTING_WIDTH = 87;
+const ACTIVE_RECORD_DOT_FILL = "#3ce";
+const INACTIVE_RECORD_DOT_FILL = "#08b";
 
 function timelineHeight(): number {
   return 0.2 * axes.minor;

@@ -81,3 +81,7 @@
   padding: calc(0.01 * var(--minor-axis));
   font-size: calc(0.055 * var(--minor-axis));
 }
+
+.ActiveRecordValue {
+  color: #3ce;
+}

@@ -27,7 +27,6 @@ import Qprom from "./Qprom";
 
 export default class App extends React.Component<{}, AppState> {
   private fileRef: React.RefObject<HTMLInputElement>;
-  private minimapContainerRef: React.RefObject<HTMLDivElement>;
   private minimapRef: React.RefObject<HTMLDivElement>;
 
   constructor(props: object) {
@@ -36,7 +35,6 @@ export default class App extends React.Component<{}, AppState> {
     this.state = { activity: Option.none(), mouseDownTarget: Option.none() };
 
     this.fileRef = React.createRef();
-    this.minimapContainerRef = React.createRef();
     this.minimapRef = React.createRef();
 
     window.addEventListener("resize", () => this.forceUpdate());
@@ -51,7 +49,6 @@ export default class App extends React.Component<{}, AppState> {
     this.toggleIsEndLocationTruncated = this.toggleIsEndLocationTruncated.bind(
       this
     );
-    this.onFileViewClick = this.onFileViewClick.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
@@ -87,7 +84,6 @@ export default class App extends React.Component<{}, AppState> {
           some: ({
             activity,
 
-            isOverviewTruncated,
             startLocation,
             isStartLocationTruncated,
             endLocation,
@@ -106,102 +102,36 @@ export default class App extends React.Component<{}, AppState> {
             } = activity;
 
             return (
-              <div className="ActivityView" onClick={this.onFileViewClick}>
-                {isOverviewTruncated ? (
-                  <>
-                    <div className="TimelineContainer">
-                      <div
-                        className="MinimapContainer"
-                        ref={this.minimapContainerRef}
-                      >
-                        <div className="Entry">
-                          <span className="Value">
-                            {monthString(startTime.getMonth()) +
-                              " " +
-                              startTime.getDate() +
-                              " "}
-                            {startLocation.match({
-                              onUpdate: this.forceUpdate,
-                              pending: () => "",
-                              fulfilled: location =>
-                                location.address.city + " ",
-                              rejected: () => ""
-                            })}
-                            {capitalizeFirstLetter(sport)}
-                          </span>
-                        </div>
-                        <div
-                          className="MinimapBackground"
-                          ref={this.minimapRef}
-                        >
-                          <div
-                            className="MinimapForeground"
-                            style={{
-                              width:
-                                (100 *
-                                  (offsetTime.getTime() -
-                                    startTime.getTime())) /
-                                  (endTime.getTime() - startTime.getTime()) +
-                                "%"
-                            }}
-                          />
-                        </div>
-                      </div>
+              <div className="ActivityView">
+                <div className="Head">
+                  <div className="Header">
+                    {monthString(startTime.getMonth()) +
+                      " " +
+                      startTime.getDate() +
+                      " "}
+                    {startLocation.match({
+                      onUpdate: this.forceUpdate,
+                      pending: () => "",
+                      fulfilled: location => location.address.city + " ",
+                      rejected: () => ""
+                    })}
+                    {capitalizeFirstLetter(sport)}
+                  </div>
 
-                      <div className="TimelineLabel">
-                        Heart Rate
-                        {(() => {
-                          const record = records[offsetIndex];
-                          if (record) {
-                            return (
-                              <span className="ActiveRecordValue">
-                                {" = " + record.heart_rate}
-                              </span>
-                            );
-                          } else {
-                            return null;
-                          }
-                        })()}
-                      </div>
-                      <Stage
-                        width={window.innerWidth}
-                        height={timelineHeight()}
-                      >
-                        <Layer
-                          width={window.innerWidth}
-                          height={timelineHeight()}
-                        >
-                          <Rect
-                            fill="#eeea"
-                            width={window.innerWidth}
-                            height={timelineHeight()}
-                          />
-                          {records
-                            .slice(offsetIndex, offsetIndex + width)
-                            .map((record, i) => (
-                              <Circle
-                                key={record.index}
-                                fill={
-                                  i === 0
-                                    ? ACTIVE_RECORD_DOT_FILL
-                                    : INACTIVE_RECORD_DOT_FILL
-                                }
-                                x={
-                                  window.innerWidth * (i / width) +
-                                  recordDotRadius()
-                                }
-                                y={
-                                  timelineHeight() -
-                                  timelineHeight() * (record.heart_rate / 200)
-                                }
-                                radius={recordDotRadius()}
-                              />
-                            ))}
-                        </Layer>
-                      </Stage>
-                    </div>
-                  </>
-                ) : (
+                  <div className="MinimapBackground" ref={this.minimapRef}>
+                    <div
+                      className="MinimapForeground"
+                      style={{
+                        width:
+                          (100 * (offsetTime.getTime() - startTime.getTime())) /
+                            (endTime.getTime() - startTime.getTime()) +
+                          "%"
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="Body">
                   <div className="ActivityOverview">
                     <div className="Entry">
                       Sport:{" "}
@@ -278,7 +208,58 @@ export default class App extends React.Component<{}, AppState> {
                       time: <span className="Value">{getTime(endTime)}</span>
                     </div>
                   </div>
-                )}
+
+                  <div className="TimelineContainer">
+                    <div className="TimelineLabel">
+                      Heart Rate
+                      {(() => {
+                        const record = records[offsetIndex];
+                        if (record) {
+                          return (
+                            <span className="ActiveRecordValue">
+                              {" = " + record.heart_rate}
+                            </span>
+                          );
+                        } else {
+                          return null;
+                        }
+                      })()}
+                    </div>
+                    <Stage width={window.innerWidth} height={timelineHeight()}>
+                      <Layer
+                        width={window.innerWidth}
+                        height={timelineHeight()}
+                      >
+                        <Rect
+                          fill="#eeea"
+                          width={window.innerWidth}
+                          height={timelineHeight()}
+                        />
+                        {records
+                          .slice(offsetIndex, offsetIndex + width)
+                          .map((record, i) => (
+                            <Circle
+                              key={record.index}
+                              fill={
+                                i === 0
+                                  ? ACTIVE_RECORD_DOT_FILL
+                                  : INACTIVE_RECORD_DOT_FILL
+                              }
+                              x={
+                                window.innerWidth * (i / width) +
+                                recordDotRadius()
+                              }
+                              y={
+                                timelineHeight() -
+                                timelineHeight() * (record.heart_rate / 200)
+                              }
+                              radius={recordDotRadius()}
+                            />
+                          ))}
+                      </Layer>
+                    </Stage>
+                  </div>
+                </div>
               </div>
             );
           }
@@ -318,7 +299,6 @@ export default class App extends React.Component<{}, AppState> {
                 activity: Option.some({
                   activity,
 
-                  isOverviewTruncated: false,
                   startLocation: Qprom.fromPromise(
                     reverseGeocode(
                       firstSession.start_position_lat,
@@ -365,54 +345,20 @@ export default class App extends React.Component<{}, AppState> {
     }));
   }
 
-  onFileViewClick(event: React.MouseEvent<HTMLDivElement>) {
-    if ((event.target as Element).classList.contains("ActivityView")) {
-      this.setState(state => ({
-        activity: state.activity.map(activity => ({
-          ...activity,
-          isOverviewTruncated: true
-        }))
-      }));
-    }
-  }
-
-  onMouseDown(event: React.MouseEvent<HTMLDivElement>) {
+  onMouseDown(event: React.MouseEvent) {
     this.setState({
       mouseDownTarget: Option.some(event.target as Element)
     });
   }
 
-  onMouseUp(event: React.MouseEvent<HTMLDivElement>) {
-    const { minimapContainerRef, minimapRef } = this;
-    const target = event.target as Element | null;
-    this.setState(state => {
-      const isTargetDescendantOfTimelineContainer = !!(
-        minimapContainerRef &&
-        minimapContainerRef.current &&
-        target &&
-        isOrIsAncestorOf(minimapContainerRef.current, target)
-      );
-      const wasMinimapBeingDragged = !!state.mouseDownTarget.match({
-        none: () => false,
-        some: target =>
-          minimapRef &&
-          minimapRef.current &&
-          isOrIsAncestorOf(minimapRef.current, target)
-      });
-      const shouldExpandOverview =
-        isTargetDescendantOfTimelineContainer && !wasMinimapBeingDragged;
-      return {
-        ...state,
-        mouseDownTarget: Option.none(),
-        activity: state.activity.map(state => ({
-          ...state,
-          isOverviewTruncated: !shouldExpandOverview
-        }))
-      };
-    });
+  onMouseUp() {
+    this.setState(state => ({
+      ...state,
+      mouseDownTarget: Option.none()
+    }));
   }
 
-  onMouseMove(event: React.MouseEvent<HTMLDivElement>) {
+  onMouseMove(event: React.MouseEvent) {
     if (this.isCursorDragged() && this.minimapRef && this.minimapRef.current) {
       const rect = this.minimapRef.current.getBoundingClientRect();
       const dx = event.clientX - rect.left;
@@ -452,9 +398,7 @@ export default class App extends React.Component<{}, AppState> {
   }
 
   onTouchStart(event: React.TouchEvent) {
-    this.setState({
-      mouseDownTarget: Option.some(event.target as Element)
-    });
+    this.onMouseDown((event as unknown) as React.MouseEvent);
   }
 
   onTouchMove(event: React.TouchEvent) {
@@ -483,11 +427,8 @@ export default class App extends React.Component<{}, AppState> {
     }
   }
 
-  onTouchEnd(event: React.TouchEvent) {
-    this.onMouseDown((event as unknown) as React.MouseEvent<
-      HTMLDivElement,
-      MouseEvent
-    >);
+  onTouchEnd() {
+    this.onMouseUp();
   }
 }
 
@@ -499,7 +440,6 @@ interface AppState {
 interface ActivityViewState {
   activity: Activity;
 
-  isOverviewTruncated: boolean;
   startLocation: Qprom<Address>;
   isStartLocationTruncated: boolean;
   endLocation: Qprom<Address>;

@@ -8,10 +8,6 @@
   --orange: #f58404;
 }
 
-.ActivityView {
-  height: 100vh;
-}
-
 .UploadButton {
   background-color: #f58404;
   color: #eee;
@@ -35,8 +31,53 @@
   border-bottom: 3px solid #d48001;
 }
 
-.ActivityOverview {
+.ActivityView {
+  height: 100vh;
+  --head-height: calc(0.2 * var(--minor-axis));
+  --body-height: calc(100vh - var(--head-height));
+}
+
+.Head {
   background-color: #111;
+  width: 100vw;
+  height: var(--head-height);
+  font-size: calc(0.06 * var(--minor-axis));
+  position: absolute;
+  top: 0;
+}
+
+.Header {
+  color: #eee;
+  font-weight: bold;
+  padding: calc(0.02 * var(--minor-axis)) 0 calc(0.02 * var(--minor-axis))
+    calc(0.01 * var(--minor-axis));
+}
+
+.MinimapBackground {
+  background-color: #ddd;
+  width: 90vw;
+  --height: calc(0.04 * var(--minor-axis));
+  height: var(--height);
+  border-radius: var(--height);
+  position: relative;
+  left: 5vw;
+}
+
+.MinimapForeground {
+  height: var(--height);
+  background-color: var(--orange);
+  border-radius: var(--height);
+}
+
+.Body {
+  position: absolute;
+  top: var(--head-height);
+  height: var(--body-height);
+  overflow: auto;
+}
+
+.ActivityOverview {
+  background-color: #222;
   color: #f58404;
   width: 100vw;
   font-size: calc(0.06 * var(--minor-axis));
@@ -50,30 +91,6 @@
 .Value {
   color: #eee;
   font-weight: bold;
-}
-
-.MinimapContainer {
-  background-color: #111;
-  width: 100vw;
-  font-size: calc(0.06 * var(--minor-axis));
-  padding-bottom: 10px;
-}
-
-.MinimapBackground {
-  background-color: #ddd;
-  width: 90vw;
-  --height: 10px;
-  height: var(--height);
-  border-radius: var(--height);
-  position: relative;
-  left: 5vw;
-  margin-top: var(--height);
-}
-
-.MinimapForeground {
-  height: var(--height);
-  background-color: var(--orange);
-  border-radius: var(--height);
 }
 
 .TimelineLabel {

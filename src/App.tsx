@@ -49,6 +49,9 @@ export default class App extends React.Component<{}, AppState> {
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
+    this.onTouchStart = this.onTouchStart.bind(this);
+    this.onTouchMove = this.onTouchMove.bind(this);
+    this.onTouchEnd = this.onTouchEnd.bind(this);
   }
 
   render() {
@@ -58,6 +61,9 @@ export default class App extends React.Component<{}, AppState> {
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
         onMouseUp={this.onMouseUp}
+        onTouchStart={this.onTouchStart}
+        onTouchMove={this.onTouchMove}
+        onTouchEnd={this.onTouchEnd}
       >
         {this.state.activity.match({
           none: () => (
@@ -401,6 +407,45 @@ export default class App extends React.Component<{}, AppState> {
           isOrIsAncestorOf(minimapRef.current, target)
         )
     });
+  }
+
+  onTouchStart(event: React.TouchEvent) {
+    this.setState({
+      mouseDownTarget: Option.some(event.target as Element)
+    });
+  }
+
+  onTouchMove(event: React.TouchEvent) {
+    if (this.isCursorDragged() && this.minimapRef && this.minimapRef.current) {
+      const rect = this.minimapRef.current.getBoundingClientRect();
+      const dx = event.touches[0].clientX - rect.left;
+      const rawCompletionFactor = dx / rect.width;
+      const clampedCompletionFactor = Math.min(
+        1,
+        Math.max(0, rawCompletionFactor)
+      );
+      this.setState(state => ({
+        activity: state.activity.map(state => {
+          const offsetTime = lerpDate(
+            state.activity.start_time,
+            state.activity.end_time,
+            clampedCompletionFactor
+          );
+          return {
+            ...state,
+            offsetTime,
+            offsetIndex: getOffsetIndex(state.activity.records, offsetTime)
+          };
+        })
+      }));
+    }
+  }
+
+  onTouchEnd(event: React.TouchEvent) {
+    this.onMouseDown((event as unknown) as React.MouseEvent<
+      HTMLDivElement,
+      MouseEvent
+    >);
   }
 }
 

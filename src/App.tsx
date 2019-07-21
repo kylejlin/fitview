@@ -33,7 +33,16 @@ export default class App extends React.Component<{}, AppState> {
   constructor(props: object) {
     super(props);
 
-    this.state = { activity: Option.none(), mouseDownTarget: Option.none() };
+    this.state = {
+      activity: Option.none(),
+      mouseDownTarget: Option.none(),
+      filters: {
+        pendingHeartRateMin: "0",
+        heartRateMin: 0,
+        pendingHeartRateMax: "200",
+        heartRateMax: 200
+      }
+    };
 
     this.fileRef = React.createRef();
     this.minimapRef = React.createRef();
@@ -56,6 +65,14 @@ export default class App extends React.Component<{}, AppState> {
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onTouchMove = this.onTouchMove.bind(this);
     this.onTouchEnd = this.onTouchEnd.bind(this);
+    this.onChangePendingHeartRateFilterMin = this.onChangePendingHeartRateFilterMin.bind(
+      this
+    );
+    this.onSyncHeartRateFilterMin = this.onSyncHeartRateFilterMin.bind(this);
+    this.onChangePendingHeartRateFilterMax = this.onChangePendingHeartRateFilterMax.bind(
+      this
+    );
+    this.onSyncHeartRateFilterMax = this.onSyncHeartRateFilterMax.bind(this);
   }
 
   render() {
@@ -213,54 +230,87 @@ export default class App extends React.Component<{}, AppState> {
                   <SectionDivider />
 
                   <div className="TimelineContainer">
-                    <div className="TimelineLabel">
-                      Heart Rate
-                      {(() => {
-                        const record = records[offsetIndex];
-                        if (record) {
-                          return (
-                            <span className="ActiveRecordValue">
-                              {" = " + record.heart_rate}
-                            </span>
-                          );
-                        } else {
-                          return null;
-                        }
-                      })()}
-                    </div>
-                    <Stage width={window.innerWidth} height={timelineHeight()}>
-                      <Layer
+                    <div className="Timeline">
+                      <div className="TimelineLabel">
+                        Heart Rate
+                        {(() => {
+                          const record = records[offsetIndex];
+                          if (record) {
+                            return (
+                              <span className="ActiveRecordValue">
+                                {" = " + record.heart_rate}
+                              </span>
+                            );
+                          } else {
+                            return null;
+                          }
+                        })()}
+                      </div>
+                      <Stage
                         width={window.innerWidth}
                         height={timelineHeight()}
                       >
-                        <Rect
-                          fill="#eeea"
+                        <Layer
                           width={window.innerWidth}
                           height={timelineHeight()}
+                        >
+                          <Rect
+                            fill="#eeea"
+                            width={window.innerWidth}
+                            height={timelineHeight()}
+                          />
+                          {records
+                            .slice(offsetIndex, offsetIndex + width)
+                            .map((record, i) => (
+                              <Circle
+                                key={record.index}
+                                fill={
+                                  i === 0
+                                    ? ACTIVE_RECORD_DOT_FILL
+                                    : INACTIVE_RECORD_DOT_FILL
+                                }
+                                x={
+                                  window.innerWidth * (i / width) +
+                                  recordDotRadius()
+                                }
+                                y={
+                                  timelineHeight() -
+                                  timelineHeight() * (record.heart_rate / 200)
+                                }
+                                radius={recordDotRadius()}
+                              />
+                            ))}
+                        </Layer>
+                      </Stage>
+                    </div>
+                  </div>
+
+                  <SectionDivider />
+
+                  <div className="FilterContainer">
+                    <div className="Filter">
+                      <div className="FilterAttribute">Heart Rate</div>
+                      <label className="FilterMinLabel">
+                        Min:{" "}
+                        <input
+                          className="FilterMin"
+                          type="number"
+                          value={this.state.filters.pendingHeartRateMin}
+                          onChange={this.onChangePendingHeartRateFilterMin}
+                          onBlur={this.onSyncHeartRateFilterMin}
                         />
-                        {records
-                          .slice(offsetIndex, offsetIndex + width)
-                          .map((record, i) => (
-                            <Circle
-                              key={record.index}
-                              fill={
-                                i === 0
-                                  ? ACTIVE_RECORD_DOT_FILL
-                                  : INACTIVE_RECORD_DOT_FILL
-                              }
-                              x={
-                                window.innerWidth * (i / width) +
-                                recordDotRadius()
-                              }
-                              y={
-                                timelineHeight() -
-                                timelineHeight() * (record.heart_rate / 200)
-                              }
-                              radius={recordDotRadius()}
-                            />
-                          ))}
-                      </Layer>
-                    </Stage>
+                      </label>
+                      <label className="FilterMaxLabel">
+                        Max:{" "}
+                        <input
+                          className="FilterMax"
+                          type="number"
+                          value={this.state.filters.pendingHeartRateMax}
+                          onChange={this.onChangePendingHeartRateFilterMax}
+                          onBlur={this.onSyncHeartRateFilterMax}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -433,11 +483,68 @@ export default class App extends React.Component<{}, AppState> {
   onTouchEnd() {
     this.onMouseUp();
   }
+
+  onChangePendingHeartRateFilterMin(event: React.ChangeEvent) {
+    this.setState({
+      filters: {
+        ...this.state.filters,
+        pendingHeartRateMin: (event.target as HTMLInputElement).value
+      }
+    });
+  }
+
+  onSyncHeartRateFilterMin() {
+    const parsed = parseInt(this.state.filters.pendingHeartRateMin, 10);
+    if (isNaN(parsed)) {
+      this.setState({
+        filters: {
+          ...this.state.filters,
+          pendingHeartRateMin: "" + this.state.filters.heartRateMin
+        }
+      });
+    } else {
+      this.setState({
+        filters: {
+          ...this.state.filters,
+          heartRateMin: parsed
+        }
+      });
+    }
+  }
+
+  onChangePendingHeartRateFilterMax(event: React.ChangeEvent) {
+    this.setState({
+      filters: {
+        ...this.state.filters,
+        pendingHeartRateMax: (event.target as HTMLInputElement).value
+      }
+    });
+  }
+
+  onSyncHeartRateFilterMax() {
+    const parsed = parseInt(this.state.filters.pendingHeartRateMax, 10);
+    if (isNaN(parsed)) {
+      this.setState({
+        filters: {
+          ...this.state.filters,
+          pendingHeartRateMax: "" + this.state.filters.heartRateMax
+        }
+      });
+    } else {
+      this.setState({
+        filters: {
+          ...this.state.filters,
+          heartRateMax: parsed
+        }
+      });
+    }
+  }
 }
 
 interface AppState {
   activity: Option<ActivityViewState>;
   mouseDownTarget: Option<Element>;
+  filters: Filters;
 }
 
 interface ActivityViewState {
@@ -451,6 +558,13 @@ interface ActivityViewState {
   offsetTime: Date;
   offsetIndex: number;
   width: number;
+}
+
+interface Filters {
+  pendingHeartRateMin: string;
+  heartRateMin: number;
+  pendingHeartRateMax: string;
+  heartRateMax: number;
 }
 
 const STARTING_WIDTH = 87;

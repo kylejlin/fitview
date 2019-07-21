@@ -3,16 +3,15 @@ import "./Timeline.css";
 
 import { Stage, Layer, Rect, Circle } from "react-konva";
 
-import roundTo from "round-to";
-
 import axes from "../axes";
 import { Filter } from "../filter";
 import {
-  getAttributeDisplayName,
+  getAttributeDisplayNameAndUnits,
   getRecordAttribute,
   Attribute,
   Record,
 } from "../getActivity";
+import { fractionalMinuteToPaceString } from "../helpers";
 
 export default function Timeline({
   attribute,
@@ -20,11 +19,12 @@ export default function Timeline({
   offsetIndex,
   width,
   filter,
+  shouldConvertRpmToSpm,
 }: Props): React.ReactElement {
   return (
     <div className="Timeline">
       <div className="TimelineLabel">
-        {getAttributeDisplayName(attribute)}
+        {getAttributeDisplayNameAndUnits(attribute, shouldConvertRpmToSpm)}
         {(() => {
           const record = records[offsetIndex];
           if (record) {
@@ -43,7 +43,12 @@ export default function Timeline({
                   })()
                 }
               >
-                {" = " + roundTo(getRecordAttribute(record, attribute), 3)}
+                {" = " +
+                  (attribute === Attribute.Pace
+                    ? fractionalMinuteToPaceString(
+                        getRecordAttribute(record, attribute)
+                      )
+                    : getRecordAttribute(record, attribute))}
               </span>
             );
           } else {
@@ -92,6 +97,7 @@ interface Props {
   offsetIndex: number;
   width: number;
   filter: Filter;
+  shouldConvertRpmToSpm: boolean;
 }
 
 const ACTIVE_RECORD_DOT_FILL = "#3ce";

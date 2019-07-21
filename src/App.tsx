@@ -81,9 +81,9 @@ export default class App extends React.Component<{}, AppState> {
     this.onChangePendingCadenceMax = (e) =>
       this.onChangePendingBound(Attribute.Cadence, BoundType.Max, e);
     this.onChangePendingSpeedMin = (e) =>
-      this.onChangePendingBound(Attribute.Speed, BoundType.Min, e);
+      this.onChangePendingBound(Attribute.Pace, BoundType.Min, e);
     this.onChangePendingSpeedMax = (e) =>
-      this.onChangePendingBound(Attribute.Speed, BoundType.Max, e);
+      this.onChangePendingBound(Attribute.Pace, BoundType.Max, e);
   }
 
   render() {
@@ -129,6 +129,7 @@ export default class App extends React.Component<{}, AppState> {
               start_time: startTime,
               end_time: endTime,
             } = activity;
+            const shouldConvertRpmToSpm = sport === "running";
 
             return (
               <div className="ActivityView">
@@ -247,6 +248,7 @@ export default class App extends React.Component<{}, AppState> {
                       offsetIndex={offsetIndex}
                       width={width}
                       filter={this.state.filter}
+                      shouldConvertRpmToSpm={shouldConvertRpmToSpm}
                     />
                     <Timeline
                       attribute={Attribute.Cadence}
@@ -254,13 +256,15 @@ export default class App extends React.Component<{}, AppState> {
                       offsetIndex={offsetIndex}
                       width={width}
                       filter={this.state.filter}
+                      shouldConvertRpmToSpm={shouldConvertRpmToSpm}
                     />
                     <Timeline
-                      attribute={Attribute.Speed}
+                      attribute={Attribute.Pace}
                       records={records}
                       offsetIndex={offsetIndex}
                       width={width}
                       filter={this.state.filter}
+                      shouldConvertRpmToSpm={shouldConvertRpmToSpm}
                     />
                   </div>
 

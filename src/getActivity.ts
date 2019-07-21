@@ -3,8 +3,8 @@ import { sum } from "./helpers";
 
 export function getActivity(rawFile: any): Activity {
   const sport: string = rawFile.sport.sport;
-  const { activity } = rawFile;
-  const sessions: Session[] = activity.sessions.map(getSession);
+  const { activity: rawActivity } = rawFile;
+  const sessions: Session[] = rawActivity.sessions.map(getSession);
   const laps: Lap[] = sessions.map((session) => session.laps).flat();
   const records: Record[] = sessions.map((session) => session.records).flat();
   records.forEach((record, i) => {
@@ -17,8 +17,8 @@ export function getActivity(rawFile: any): Activity {
   const start_time = records[0].timestamp;
   const end_time = records[records.length - 1].timestamp;
 
-  return {
-    ...activity,
+  const activity = {
+    ...rawActivity,
     sport,
     sessions,
     laps,
@@ -28,6 +28,9 @@ export function getActivity(rawFile: any): Activity {
     start_time,
     end_time,
   };
+  convertRpmToSpmIfRunning(activity);
+  calculatePace(activity);
+  return activity;
 }
 
 function getSession(rawSession: any): Session {
@@ -46,6 +49,21 @@ function getLap(rawLap: any): Lap {
   lap.end_time = lap.records[lap.records.length - 1].timestamp;
   return lap;
 }
+
+function convertRpmToSpmIfRunning(activity: Activity) {
+  if (activity.sport === "running") {
+    activity.records.forEach((record) => {
+      record.cadence *= 2;
+    });
+  }
+}
+
+function calculatePace(activity: Activity) {
+  activity.records.forEach((record) => {
+    record.pace = 60 / (record.speed * KPH_TO_MPH);
+  });
+}
+const KPH_TO_MPH = 0.621371;
 
 export interface Activity {
   start_time: Date;
@@ -120,13 +138,14 @@ export interface Record {
   position_lat: number;
   position_long: number;
   speed: number;
+  pace: number;
   temperature: number;
 }
 
 export enum Attribute {
   HeartRate,
   Cadence,
-  Speed,
+  Pace,
 }
 export const ALL_ATTRIBUTES = allVariants<Attribute>(Attribute);
 
@@ -139,18 +158,21 @@ export function getRecordAttribute(
       return record.heart_rate;
     case Attribute.Cadence:
       return record.cadence;
-    case Attribute.Speed:
-      return record.speed;
+    case Attribute.Pace:
+      return record.pace;
   }
 }
 
-export function getAttributeDisplayName(attribute: Attribute): string {
+export function getAttributeDisplayNameAndUnits(
+  attribute: Attribute,
+  shouldConvertRpmToSpm: boolean
+): string {
   switch (attribute) {
     case Attribute.HeartRate:
-      return "Heart rate";
+      return "Heart rate (bpm)";
     case Attribute.Cadence:
-      return "Cadence";
-    case Attribute.Speed:
-      return "Speed";
+      return "Cadence " + (shouldConvertRpmToSpm ? "(spm)" : "(rpm)");
+    case Attribute.Pace:
+      return "Pace (min/mi)";
   }
 }

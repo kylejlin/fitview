@@ -89,7 +89,7 @@ export class Filter {
         return this.heartRate;
       case Attribute.Cadence:
         return this.cadence;
-      case Attribute.Speed:
+      case Attribute.Pace:
         return this.speed;
     }
   }
@@ -136,7 +136,7 @@ function pendingKeyBeginningAttribute(attribute: Attribute): string {
       return "pendingHeartRate";
     case Attribute.Cadence:
       return "pendingCadence";
-    case Attribute.Speed:
+    case Attribute.Pace:
       return "pendingSpeed";
   }
 }

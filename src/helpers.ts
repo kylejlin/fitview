@@ -123,3 +123,14 @@ export interface Address {
 export function sum(numbers: number[]): number {
   return numbers.reduce((total, n) => total + n, 0);
 }
+
+export function fractionalMinuteToPaceString(minutes: number): string {
+  if (isNaN(minutes) || minutes === Infinity || minutes === -Infinity) {
+    return "stationary";
+  } else {
+    const fractionalPart = minutes - Math.floor(minutes);
+    return (
+      Math.floor(minutes) + ":" + zeroPad(Math.floor(60 * fractionalPart), 2)
+    );
+  }
+}

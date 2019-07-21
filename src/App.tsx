@@ -5,6 +5,7 @@ import { Stage, Layer, Rect, Circle } from "react-konva";
 
 import ExpandButton from "./components/ExpandButton";
 import Location from "./components/Location";
+import SectionDivider from "./components/SectionDivider";
 
 import { isOrIsAncestorOf, EasyFit } from "./lib";
 
@@ -208,6 +209,8 @@ export default class App extends React.Component<{}, AppState> {
                       time: <span className="Value">{getTime(endTime)}</span>
                     </div>
                   </div>
+
+                  <SectionDivider />
 
                   <div className="TimelineContainer">
                     <div className="TimelineLabel">

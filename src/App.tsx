@@ -10,6 +10,7 @@ import SectionDivider from "./components/SectionDivider";
 import { isOrIsAncestorOf, EasyFit } from "./lib";
 
 import axes from "./axes";
+import { Attribute, BoundType, Filter } from "./filter";
 import { getActivity, Activity } from "./getActivity";
 import {
   getActivityRecords,
@@ -30,18 +31,24 @@ export default class App extends React.Component<{}, AppState> {
   private fileRef: React.RefObject<HTMLInputElement>;
   private minimapRef: React.RefObject<HTMLDivElement>;
 
+  private onChangePendingHeartRateMin: (event: React.ChangeEvent) => void;
+  private onChangePendingHeartRateMax: (event: React.ChangeEvent) => void;
+  private onChangePendingCadenceMin: (event: React.ChangeEvent) => void;
+  private onChangePendingCadenceMax: (event: React.ChangeEvent) => void;
+  private onChangePendingSpeedMin: (event: React.ChangeEvent) => void;
+  private onChangePendingSpeedMax: (event: React.ChangeEvent) => void;
+
   constructor(props: object) {
     super(props);
 
     this.state = {
       activity: Option.none(),
       mouseDownTarget: Option.none(),
-      filters: {
-        pendingHeartRateMin: "0",
-        heartRateMin: 0,
-        pendingHeartRateMax: "200",
-        heartRateMax: 200
-      }
+      filter: new Filter({
+        heartRate: [0, 200],
+        cadence: [0, 125],
+        speed: [0, 40]
+      })
     };
 
     this.fileRef = React.createRef();
@@ -65,14 +72,20 @@ export default class App extends React.Component<{}, AppState> {
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onTouchMove = this.onTouchMove.bind(this);
     this.onTouchEnd = this.onTouchEnd.bind(this);
-    this.onChangePendingHeartRateFilterMin = this.onChangePendingHeartRateFilterMin.bind(
-      this
-    );
-    this.onSyncHeartRateFilterMin = this.onSyncHeartRateFilterMin.bind(this);
-    this.onChangePendingHeartRateFilterMax = this.onChangePendingHeartRateFilterMax.bind(
-      this
-    );
-    this.onSyncHeartRateFilterMax = this.onSyncHeartRateFilterMax.bind(this);
+    this.onSyncPendingBounds = this.onSyncPendingBounds.bind(this);
+
+    this.onChangePendingHeartRateMin = e =>
+      this.onChangePendingBound(Attribute.HeartRate, BoundType.Min, e);
+    this.onChangePendingHeartRateMax = e =>
+      this.onChangePendingBound(Attribute.HeartRate, BoundType.Max, e);
+    this.onChangePendingCadenceMin = e =>
+      this.onChangePendingBound(Attribute.Cadence, BoundType.Min, e);
+    this.onChangePendingCadenceMax = e =>
+      this.onChangePendingBound(Attribute.Cadence, BoundType.Max, e);
+    this.onChangePendingSpeedMin = e =>
+      this.onChangePendingBound(Attribute.Speed, BoundType.Min, e);
+    this.onChangePendingSpeedMax = e =>
+      this.onChangePendingBound(Attribute.Speed, BoundType.Max, e);
   }
 
   render() {
@@ -294,20 +307,74 @@ export default class App extends React.Component<{}, AppState> {
                         Min:{" "}
                         <input
                           className="FilterMin"
-                          type="number"
-                          value={this.state.filters.pendingHeartRateMin}
-                          onChange={this.onChangePendingHeartRateFilterMin}
-                          onBlur={this.onSyncHeartRateFilterMin}
+                          type="text"
+                          pattern="\d*"
+                          value={this.state.filter.pendingHeartRateMin}
+                          onChange={this.onChangePendingHeartRateMin}
+                          onBlur={this.onSyncPendingBounds}
                         />
                       </label>
                       <label className="FilterMaxLabel">
                         Max:{" "}
                         <input
                           className="FilterMax"
-                          type="number"
-                          value={this.state.filters.pendingHeartRateMax}
-                          onChange={this.onChangePendingHeartRateFilterMax}
-                          onBlur={this.onSyncHeartRateFilterMax}
+                          type="text"
+                          pattern="\d*"
+                          value={this.state.filter.pendingHeartRateMax}
+                          onChange={this.onChangePendingHeartRateMax}
+                          onBlur={this.onSyncPendingBounds}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="Filter">
+                      <div className="FilterAttribute">Cadence</div>
+                      <label className="FilterMinLabel">
+                        Min:{" "}
+                        <input
+                          className="FilterMin"
+                          type="text"
+                          pattern="\d*"
+                          value={this.state.filter.pendingCadenceMin}
+                          onChange={this.onChangePendingCadenceMin}
+                          onBlur={this.onSyncPendingBounds}
+                        />
+                      </label>
+                      <label className="FilterMaxLabel">
+                        Max:{" "}
+                        <input
+                          className="FilterMax"
+                          type="text"
+                          pattern="\d*"
+                          value={this.state.filter.pendingCadenceMax}
+                          onChange={this.onChangePendingCadenceMax}
+                          onBlur={this.onSyncPendingBounds}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="Filter">
+                      <div className="FilterAttribute">Speed</div>
+                      <label className="FilterMinLabel">
+                        Min:{" "}
+                        <input
+                          className="FilterMin"
+                          type="text"
+                          pattern="\d*"
+                          value={this.state.filter.pendingSpeedMin}
+                          onChange={this.onChangePendingSpeedMin}
+                          onBlur={this.onSyncPendingBounds}
+                        />
+                      </label>
+                      <label className="FilterMaxLabel">
+                        Max:{" "}
+                        <input
+                          className="FilterMax"
+                          type="text"
+                          pattern="\d*"
+                          value={this.state.filter.pendingSpeedMax}
+                          onChange={this.onChangePendingSpeedMax}
+                          onBlur={this.onSyncPendingBounds}
                         />
                       </label>
                     </div>
@@ -484,67 +551,31 @@ export default class App extends React.Component<{}, AppState> {
     this.onMouseUp();
   }
 
-  onChangePendingHeartRateFilterMin(event: React.ChangeEvent) {
+  onChangePendingBound(
+    attribute: Attribute,
+    boundType: BoundType,
+    event: React.ChangeEvent
+  ) {
     this.setState({
-      filters: {
-        ...this.state.filters,
-        pendingHeartRateMin: (event.target as HTMLInputElement).value
-      }
+      filter: this.state.filter.setPendingBound(
+        attribute,
+        boundType,
+        (event.target as HTMLInputElement).value
+      )
     });
   }
 
-  onSyncHeartRateFilterMin() {
-    const parsed = parseInt(this.state.filters.pendingHeartRateMin, 10);
-    if (isNaN(parsed)) {
-      this.setState({
-        filters: {
-          ...this.state.filters,
-          pendingHeartRateMin: "" + this.state.filters.heartRateMin
-        }
-      });
-    } else {
-      this.setState({
-        filters: {
-          ...this.state.filters,
-          heartRateMin: parsed
-        }
-      });
-    }
-  }
-
-  onChangePendingHeartRateFilterMax(event: React.ChangeEvent) {
+  onSyncPendingBounds() {
     this.setState({
-      filters: {
-        ...this.state.filters,
-        pendingHeartRateMax: (event.target as HTMLInputElement).value
-      }
+      filter: this.state.filter.syncPendingBoundsWithActualBounds()
     });
-  }
-
-  onSyncHeartRateFilterMax() {
-    const parsed = parseInt(this.state.filters.pendingHeartRateMax, 10);
-    if (isNaN(parsed)) {
-      this.setState({
-        filters: {
-          ...this.state.filters,
-          pendingHeartRateMax: "" + this.state.filters.heartRateMax
-        }
-      });
-    } else {
-      this.setState({
-        filters: {
-          ...this.state.filters,
-          heartRateMax: parsed
-        }
-      });
-    }
   }
 }
 
 interface AppState {
   activity: Option<ActivityViewState>;
   mouseDownTarget: Option<Element>;
-  filters: Filters;
+  filter: Filter;
 }
 
 interface ActivityViewState {
@@ -558,13 +589,6 @@ interface ActivityViewState {
   offsetTime: Date;
   offsetIndex: number;
   width: number;
-}
-
-interface Filters {
-  pendingHeartRateMin: string;
-  heartRateMin: number;
-  pendingHeartRateMax: string;
-  heartRateMax: number;
 }
 
 const STARTING_WIDTH = 87;

@@ -1,12 +1,9 @@
-import allVariants from "./allVariants";
-import { Record } from "./getActivity";
-
-export enum Attribute {
-  HeartRate,
-  Cadence,
-  Speed
-}
-const ALL_ATTRIBUTES = allVariants<Attribute>(Attribute);
+import {
+  getRecordAttribute,
+  Attribute,
+  Record,
+  ALL_ATTRIBUTES
+} from "./getActivity";
 
 export enum BoundType {
   Min,
@@ -76,7 +73,7 @@ export class Filter {
 
   private isAttributeLegal(attribute: Attribute, record: Record): boolean {
     const [min, max] = this.getBounds(attribute);
-    const value = getValueFromRecord(record, attribute);
+    const value = getRecordAttribute(record, attribute);
     return min <= value && value <= max;
   }
 
@@ -115,17 +112,6 @@ function strictParseInt(value: string): number {
     return parseInt(value, 10);
   } else {
     return NaN;
-  }
-}
-
-function getValueFromRecord(record: Record, attribute: Attribute): number {
-  switch (attribute) {
-    case Attribute.HeartRate:
-      return record.heart_rate;
-    case Attribute.Cadence:
-      return record.cadence;
-    case Attribute.Speed:
-      return record.speed;
   }
 }
 

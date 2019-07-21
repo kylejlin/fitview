@@ -98,20 +98,6 @@
   font-weight: bold;
 }
 
-.Timeline {
-  margin-bottom: calc(0.05 * var(--minor-axis));
-}
-
-.TimelineLabel {
-  color: #eee;
-  padding: calc(0.01 * var(--minor-axis));
-  font-size: calc(0.055 * var(--minor-axis));
-}
-
-.ActiveRecordValue {
-  color: #3ce;
-}
-
 .Filter {
   margin-bottom: calc(0.05 * var(--minor-axis));
 }

@@ -1,3 +1,4 @@
+import allVariants from "./allVariants";
 import { sum } from "./helpers";
 
 export function getActivity(rawFile: any): Activity {
@@ -120,4 +121,36 @@ export interface Record {
   position_long: number;
   speed: number;
   temperature: number;
+}
+
+export enum Attribute {
+  HeartRate,
+  Cadence,
+  Speed
+}
+export const ALL_ATTRIBUTES = allVariants<Attribute>(Attribute);
+
+export function getRecordAttribute(
+  record: Record,
+  attribute: Attribute
+): number {
+  switch (attribute) {
+    case Attribute.HeartRate:
+      return record.heart_rate;
+    case Attribute.Cadence:
+      return record.cadence;
+    case Attribute.Speed:
+      return record.speed;
+  }
+}
+
+export function getAttributeDisplayName(attribute: Attribute): string {
+  switch (attribute) {
+    case Attribute.HeartRate:
+      return "Heart rate";
+    case Attribute.Cadence:
+      return "Cadence";
+    case Attribute.Speed:
+      return "Speed";
+  }
 }

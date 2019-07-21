@@ -1,17 +1,15 @@
 import React from "react";
 import "./App.css";
 
-import { Stage, Layer, Rect, Circle } from "react-konva";
-
 import ExpandButton from "./components/ExpandButton";
 import Location from "./components/Location";
 import SectionDivider from "./components/SectionDivider";
+import Timeline from "./components/Timeline";
 
 import { isOrIsAncestorOf, EasyFit } from "./lib";
 
-import axes from "./axes";
-import { Attribute, BoundType, Filter } from "./filter";
-import { getActivity, Activity } from "./getActivity";
+import { BoundType, Filter } from "./filter";
+import { getActivity, Activity, Attribute } from "./getActivity";
 import {
   getActivityRecords,
   capitalizeFirstLetter,
@@ -243,74 +241,27 @@ export default class App extends React.Component<{}, AppState> {
                   <SectionDivider />
 
                   <div className="TimelineContainer">
-                    <div className="Timeline">
-                      <div className="TimelineLabel">
-                        Heart Rate
-                        {(() => {
-                          const record = records[offsetIndex];
-                          if (record) {
-                            return (
-                              <span className="ActiveRecordValue">
-                                {" = " + record.heart_rate}
-                              </span>
-                            );
-                          } else {
-                            return null;
-                          }
-                        })()}
-                      </div>
-                      <Stage
-                        width={window.innerWidth}
-                        height={timelineHeight()}
-                      >
-                        <Layer
-                          width={window.innerWidth}
-                          height={timelineHeight()}
-                        >
-                          <Rect
-                            fill="#eeea"
-                            width={window.innerWidth}
-                            height={timelineHeight()}
-                          />
-                          {records
-                            .slice(offsetIndex, offsetIndex + width)
-                            .map((record, i) => (
-                              <Circle
-                                key={record.index}
-                                fill={(() => {
-                                  if (
-                                    this.state.filter.isAttributeIllegal(
-                                      Attribute.HeartRate,
-                                      record
-                                    )
-                                  ) {
-                                    return ILLEGAL_ATTRIBUTE_RECORD_DOT_FILL;
-                                  } else if (
-                                    this.state.filter.isAnyAttributeIllegal(
-                                      record
-                                    )
-                                  ) {
-                                    return ILLEGAL_OTHER_ATTRIBUTE_RECORD_DOT_FILL;
-                                  } else {
-                                    return i === 0
-                                      ? ACTIVE_RECORD_DOT_FILL
-                                      : INACTIVE_RECORD_DOT_FILL;
-                                  }
-                                })()}
-                                x={
-                                  window.innerWidth * (i / width) +
-                                  recordDotRadius()
-                                }
-                                y={
-                                  timelineHeight() -
-                                  timelineHeight() * (record.heart_rate / 200)
-                                }
-                                radius={recordDotRadius()}
-                              />
-                            ))}
-                        </Layer>
-                      </Stage>
-                    </div>
+                    <Timeline
+                      attribute={Attribute.HeartRate}
+                      records={records}
+                      offsetIndex={offsetIndex}
+                      width={width}
+                      filter={this.state.filter}
+                    />
+                    <Timeline
+                      attribute={Attribute.Cadence}
+                      records={records}
+                      offsetIndex={offsetIndex}
+                      width={width}
+                      filter={this.state.filter}
+                    />
+                    <Timeline
+                      attribute={Attribute.Speed}
+                      records={records}
+                      offsetIndex={offsetIndex}
+                      width={width}
+                      filter={this.state.filter}
+                    />
                   </div>
 
                   <SectionDivider />
@@ -607,15 +558,3 @@ interface ActivityViewState {
 }
 
 const STARTING_WIDTH = 87;
-const ACTIVE_RECORD_DOT_FILL = "#3ce";
-const INACTIVE_RECORD_DOT_FILL = "#08b";
-const ILLEGAL_ATTRIBUTE_RECORD_DOT_FILL = "red";
-const ILLEGAL_OTHER_ATTRIBUTE_RECORD_DOT_FILL = "orange";
-
-function timelineHeight(): number {
-  return 0.2 * axes.minor;
-}
-
-function recordDotRadius(): number {
-  return 0.005 * axes.major;
-}

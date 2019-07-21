@@ -23,7 +23,7 @@ export function dayOfWeekString(index: number): string {
     "Wednesday",
     "Thursday",
     "Friday",
-    "Saturday"
+    "Saturday",
   ][index];
 }
 
@@ -40,7 +40,7 @@ export function monthString(index: number): string {
     "September",
     "October",
     "November",
-    "December"
+    "December",
   ][index];
 }
 

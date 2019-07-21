@@ -1,7 +1,7 @@
 enum PromStatus {
   Pending,
   Fulfilled,
-  Rejected
+  Rejected,
 }
 
 export default class Qprom<T> extends Promise<T> {
@@ -27,17 +27,17 @@ export default class Qprom<T> extends Promise<T> {
     this.updateListeners = [];
 
     if (shouldListen) {
-      super.then(val => {
+      super.then((val) => {
         this.status = PromStatus.Fulfilled;
         this.value = val;
-        this.updateListeners.forEach(onUpdate => {
+        this.updateListeners.forEach((onUpdate) => {
           onUpdate();
         });
       });
-      super.catch(err => {
+      super.catch((err) => {
         this.status = PromStatus.Rejected;
         this.error = err;
-        this.updateListeners.forEach(onUpdate => {
+        this.updateListeners.forEach((onUpdate) => {
           onUpdate();
         });
       });

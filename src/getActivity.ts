@@ -5,14 +5,14 @@ export function getActivity(rawFile: any): Activity {
   const sport: string = rawFile.sport.sport;
   const { activity } = rawFile;
   const sessions: Session[] = activity.sessions.map(getSession);
-  const laps: Lap[] = sessions.map(session => session.laps).flat();
-  const records: Record[] = sessions.map(session => session.records).flat();
+  const laps: Lap[] = sessions.map((session) => session.laps).flat();
+  const records: Record[] = sessions.map((session) => session.records).flat();
   records.forEach((record, i) => {
     record.index = i;
   });
-  const total_distance = sum(sessions.map(session => session.total_distance));
+  const total_distance = sum(sessions.map((session) => session.total_distance));
   const total_elapsed_time = sum(
-    sessions.map(session => session.total_elapsed_time)
+    sessions.map((session) => session.total_elapsed_time)
   );
   const start_time = records[0].timestamp;
   const end_time = records[records.length - 1].timestamp;
@@ -26,7 +26,7 @@ export function getActivity(rawFile: any): Activity {
     total_distance,
     total_elapsed_time,
     start_time,
-    end_time
+    end_time,
   };
 }
 
@@ -126,7 +126,7 @@ export interface Record {
 export enum Attribute {
   HeartRate,
   Cadence,
-  Speed
+  Speed,
 }
 export const ALL_ATTRIBUTES = allVariants<Attribute>(Attribute);
 

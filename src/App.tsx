@@ -20,7 +20,7 @@ import {
   reverseGeocode,
   lerpDate,
   getOffsetIndex,
-  Address
+  Address,
 } from "./helpers";
 import Option from "./Option";
 import Qprom from "./Qprom";
@@ -45,8 +45,8 @@ export default class App extends React.Component<{}, AppState> {
       filter: new Filter({
         heartRate: [0, 200],
         cadence: [0, 125],
-        speed: [0, 40]
-      })
+        speed: [0, 40],
+      }),
     };
 
     this.fileRef = React.createRef();
@@ -72,17 +72,17 @@ export default class App extends React.Component<{}, AppState> {
     this.onTouchEnd = this.onTouchEnd.bind(this);
     this.onSyncPendingBounds = this.onSyncPendingBounds.bind(this);
 
-    this.onChangePendingHeartRateMin = e =>
+    this.onChangePendingHeartRateMin = (e) =>
       this.onChangePendingBound(Attribute.HeartRate, BoundType.Min, e);
-    this.onChangePendingHeartRateMax = e =>
+    this.onChangePendingHeartRateMax = (e) =>
       this.onChangePendingBound(Attribute.HeartRate, BoundType.Max, e);
-    this.onChangePendingCadenceMin = e =>
+    this.onChangePendingCadenceMin = (e) =>
       this.onChangePendingBound(Attribute.Cadence, BoundType.Min, e);
-    this.onChangePendingCadenceMax = e =>
+    this.onChangePendingCadenceMax = (e) =>
       this.onChangePendingBound(Attribute.Cadence, BoundType.Max, e);
-    this.onChangePendingSpeedMin = e =>
+    this.onChangePendingSpeedMin = (e) =>
       this.onChangePendingBound(Attribute.Speed, BoundType.Min, e);
-    this.onChangePendingSpeedMax = e =>
+    this.onChangePendingSpeedMax = (e) =>
       this.onChangePendingBound(Attribute.Speed, BoundType.Max, e);
   }
 
@@ -120,14 +120,14 @@ export default class App extends React.Component<{}, AppState> {
 
             offsetTime,
             offsetIndex,
-            width
+            width,
           }) => {
             const {
               sport,
               records,
               total_elapsed_time,
               start_time: startTime,
-              end_time: endTime
+              end_time: endTime,
             } = activity;
 
             return (
@@ -141,8 +141,8 @@ export default class App extends React.Component<{}, AppState> {
                     {startLocation.match({
                       onUpdate: this.forceUpdate,
                       pending: () => "",
-                      fulfilled: location => location.address.city + " ",
-                      rejected: () => ""
+                      fulfilled: (location) => location.address.city + " ",
+                      rejected: () => "",
                     })}
                     {capitalizeFirstLetter(sport)}
                   </div>
@@ -154,7 +154,7 @@ export default class App extends React.Component<{}, AppState> {
                         width:
                           (100 * (offsetTime.getTime() - startTime.getTime())) /
                             (endTime.getTime() - startTime.getTime()) +
-                          "%"
+                          "%",
                       }}
                     />
                   </div>
@@ -182,7 +182,7 @@ export default class App extends React.Component<{}, AppState> {
                       <span className="Value">
                         {startLocation.match({
                           pending: () => "loading",
-                          fulfilled: startLocation => (
+                          fulfilled: (startLocation) => (
                             <>
                               <ExpandButton
                                 isExpanded={!isStartLocationTruncated}
@@ -194,11 +194,11 @@ export default class App extends React.Component<{}, AppState> {
                               />
                             </>
                           ),
-                          rejected: err => {
+                          rejected: (err) => {
                             console.log("Error loading start location", err);
                             return "Error loading location";
                           },
-                          onUpdate: this.forceUpdate
+                          onUpdate: this.forceUpdate,
                         })}
                       </span>
                     </div>
@@ -207,7 +207,7 @@ export default class App extends React.Component<{}, AppState> {
                       <span className="Value">
                         {endLocation.match({
                           pending: () => "loading",
-                          fulfilled: endLocation => (
+                          fulfilled: (endLocation) => (
                             <>
                               <ExpandButton
                                 isExpanded={!isEndLocationTruncated}
@@ -219,11 +219,11 @@ export default class App extends React.Component<{}, AppState> {
                               />
                             </>
                           ),
-                          rejected: err => {
+                          rejected: (err) => {
                             console.log("Error loading start location", err);
                             return "Error loading location";
                           },
-                          onUpdate: this.forceUpdate
+                          onUpdate: this.forceUpdate,
                         })}
                       </span>
                     </div>
@@ -348,7 +348,7 @@ export default class App extends React.Component<{}, AppState> {
                 </div>
               </div>
             );
-          }
+          },
         })}
       </div>
     );
@@ -370,7 +370,7 @@ export default class App extends React.Component<{}, AppState> {
             lengthUnit: "m",
             temperatureUnit: "kelvin",
             elapsedRecordField: true,
-            mode: "cascade"
+            mode: "cascade",
           }).parse(buffer, (error: any, data: any) => {
             if (error) {
               throw error;
@@ -402,8 +402,8 @@ export default class App extends React.Component<{}, AppState> {
 
                   offsetTime: activity.start_time,
                   offsetIndex: 0,
-                  width: STARTING_WIDTH
-                })
+                  width: STARTING_WIDTH,
+                }),
               });
             }
           });
@@ -414,33 +414,33 @@ export default class App extends React.Component<{}, AppState> {
   }
 
   toggleIsStartLocationTruncated() {
-    this.setState(state => ({
-      activity: state.activity.map(activity => ({
+    this.setState((state) => ({
+      activity: state.activity.map((activity) => ({
         ...activity,
-        isStartLocationTruncated: !activity.isStartLocationTruncated
-      }))
+        isStartLocationTruncated: !activity.isStartLocationTruncated,
+      })),
     }));
   }
 
   toggleIsEndLocationTruncated() {
-    this.setState(state => ({
-      activity: state.activity.map(activity => ({
+    this.setState((state) => ({
+      activity: state.activity.map((activity) => ({
         ...activity,
-        isEndLocationTruncated: !activity.isEndLocationTruncated
-      }))
+        isEndLocationTruncated: !activity.isEndLocationTruncated,
+      })),
     }));
   }
 
   onMouseDown(event: React.MouseEvent) {
     this.setState({
-      mouseDownTarget: Option.some(event.target as Element)
+      mouseDownTarget: Option.some(event.target as Element),
     });
   }
 
   onMouseUp() {
-    this.setState(state => ({
+    this.setState((state) => ({
       ...state,
-      mouseDownTarget: Option.none()
+      mouseDownTarget: Option.none(),
     }));
   }
 
@@ -453,8 +453,8 @@ export default class App extends React.Component<{}, AppState> {
         1,
         Math.max(0, rawCompletionFactor)
       );
-      this.setState(state => ({
-        activity: state.activity.map(state => {
+      this.setState((state) => ({
+        activity: state.activity.map((state) => {
           const offsetTime = lerpDate(
             state.activity.start_time,
             state.activity.end_time,
@@ -463,9 +463,9 @@ export default class App extends React.Component<{}, AppState> {
           return {
             ...state,
             offsetTime,
-            offsetIndex: getOffsetIndex(state.activity.records, offsetTime)
+            offsetIndex: getOffsetIndex(state.activity.records, offsetTime),
           };
-        })
+        }),
       }));
     }
   }
@@ -474,12 +474,12 @@ export default class App extends React.Component<{}, AppState> {
     const { minimapRef } = this;
     return this.state.mouseDownTarget.match({
       none: () => false,
-      some: target =>
+      some: (target) =>
         !!(
           minimapRef &&
           minimapRef.current &&
           isOrIsAncestorOf(minimapRef.current, target)
-        )
+        ),
     });
   }
 
@@ -496,8 +496,8 @@ export default class App extends React.Component<{}, AppState> {
         1,
         Math.max(0, rawCompletionFactor)
       );
-      this.setState(state => ({
-        activity: state.activity.map(state => {
+      this.setState((state) => ({
+        activity: state.activity.map((state) => {
           const offsetTime = lerpDate(
             state.activity.start_time,
             state.activity.end_time,
@@ -506,9 +506,9 @@ export default class App extends React.Component<{}, AppState> {
           return {
             ...state,
             offsetTime,
-            offsetIndex: getOffsetIndex(state.activity.records, offsetTime)
+            offsetIndex: getOffsetIndex(state.activity.records, offsetTime),
           };
-        })
+        }),
       }));
     }
   }
@@ -527,13 +527,13 @@ export default class App extends React.Component<{}, AppState> {
         attribute,
         boundType,
         (event.target as HTMLInputElement).value
-      )
+      ),
     });
   }
 
   onSyncPendingBounds() {
     this.setState({
-      filter: this.state.filter.syncPendingBoundsWithActualBounds()
+      filter: this.state.filter.syncPendingBoundsWithActualBounds(),
     });
   }
 }

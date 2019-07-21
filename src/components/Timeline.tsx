@@ -11,7 +11,7 @@ import {
   getAttributeDisplayName,
   getRecordAttribute,
   Attribute,
-  Record
+  Record,
 } from "../getActivity";
 
 export default function Timeline({
@@ -19,7 +19,7 @@ export default function Timeline({
   records,
   offsetIndex,
   width,
-  filter
+  filter,
 }: Props): React.ReactElement {
   return (
     <div className="Timeline">

@@ -29,14 +29,14 @@ export default class Option<T> {
   map<R>(mapper: (value: T) => R): Option<R> {
     return this.match({
       none: () => (this as unknown) as Option<R>,
-      some: value => Option.some(mapper(value))
+      some: (value) => Option.some(mapper(value)),
     });
   }
 
   unwrapOr<D>(defaultValue: D): T | D {
     return this.match({
       none: () => defaultValue,
-      some: value => value
+      some: (value) => value,
     });
   }
 }

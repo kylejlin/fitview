@@ -3,7 +3,7 @@ import "./ExpandButton.css";
 
 export default function ExpandButton({
   isExpanded,
-  onClick
+  onClick,
 }: {
   isExpanded: boolean;
   onClick: () => void;

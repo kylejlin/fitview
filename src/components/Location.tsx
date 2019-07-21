@@ -5,7 +5,7 @@ import { Address } from "../helpers";
 // When this TypeScript bug is fixed, feel free to replace `...): any` with `...): string`.
 export default function Location({
   isTruncated,
-  location
+  location,
 }: {
   isTruncated: boolean;
   location: Address;

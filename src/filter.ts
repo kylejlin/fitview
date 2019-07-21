@@ -2,12 +2,12 @@ import {
   getRecordAttribute,
   Attribute,
   Record,
-  ALL_ATTRIBUTES
+  ALL_ATTRIBUTES,
 } from "./getActivity";
 
 export enum BoundType {
   Min,
-  Max
+  Max,
 }
 
 export class Filter {
@@ -63,7 +63,7 @@ export class Filter {
         this.pendingCadenceMin,
         this.pendingCadenceMax
       ),
-      speed: sync(this.speed, this.pendingSpeedMin, this.pendingSpeedMax)
+      speed: sync(this.speed, this.pendingSpeedMin, this.pendingSpeedMax),
     });
   }
 
@@ -78,7 +78,7 @@ export class Filter {
   }
 
   isAnyAttributeIllegal(record: Record): boolean {
-    return ALL_ATTRIBUTES.some(attribute =>
+    return ALL_ATTRIBUTES.some((attribute) =>
       this.isAttributeIllegal(attribute, record)
     );
   }

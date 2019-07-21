@@ -18,12 +18,12 @@ export default class PromiseRenderer<
     this.value = undefined;
 
     promise
-      .then(value => {
+      .then((value) => {
         this.isComplete = true;
         this.value = value;
         this.forceUpdate();
       })
-      .catch(value => {
+      .catch((value) => {
         this.isComplete = true;
         this.value = value;
         this.forceUpdate();

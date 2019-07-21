@@ -1,6 +1,13 @@
 import allVariants from "./allVariants";
 import { Record } from "./getActivity";
 
+export enum Attribute {
+  HeartRate,
+  Cadence,
+  Speed
+}
+const ALL_ATTRIBUTES = allVariants<Attribute>(Attribute);
+
 export enum BoundType {
   Min,
   Max
@@ -127,13 +134,6 @@ interface FilterConfig {
   cadence: [number, number];
   speed: [number, number];
 }
-
-export enum Attribute {
-  HeartRate,
-  Cadence,
-  Speed
-}
-const ALL_ATTRIBUTES = allVariants<Attribute>(Attribute);
 
 function pendingKeyFromAttributeAndBoundType(
   attribute: Attribute,

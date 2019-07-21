@@ -1,3 +1,6 @@
+import allVariants from "./allVariants";
+import { Record } from "./getActivity";
+
 export enum BoundType {
   Min,
   Max
@@ -34,9 +37,14 @@ export class Filter {
     value: string
   ): Filter {
     const filter = new Filter(this.config());
-    const key = keyFromAttributeAndBoundType(attribute, boundType);
+    const key = pendingKeyFromAttributeAndBoundType(attribute, boundType);
     filter[key] = value as any;
     return filter;
+  }
+
+  private config(): FilterConfig {
+    const { heartRate, cadence, speed } = this;
+    return { heartRate, cadence, speed };
   }
 
   syncPendingBoundsWithActualBounds(): Filter {
@@ -55,9 +63,31 @@ export class Filter {
     });
   }
 
-  config(): FilterConfig {
-    const { heartRate, cadence, speed } = this;
-    return { heartRate, cadence, speed };
+  isAttributeIllegal(attribute: Attribute, record: Record): boolean {
+    return !this.isAttributeLegal(attribute, record);
+  }
+
+  private isAttributeLegal(attribute: Attribute, record: Record): boolean {
+    const [min, max] = this.getBounds(attribute);
+    const value = getValueFromRecord(record, attribute);
+    return min <= value && value <= max;
+  }
+
+  isAnyAttributeIllegal(record: Record): boolean {
+    return ALL_ATTRIBUTES.some(attribute =>
+      this.isAttributeIllegal(attribute, record)
+    );
+  }
+
+  private getBounds(attribute: Attribute): [number, number] {
+    switch (attribute) {
+      case Attribute.HeartRate:
+        return this.heartRate;
+      case Attribute.Cadence:
+        return this.cadence;
+      case Attribute.Speed:
+        return this.speed;
+    }
   }
 }
 
@@ -81,6 +111,17 @@ function strictParseInt(value: string): number {
   }
 }
 
+function getValueFromRecord(record: Record, attribute: Attribute): number {
+  switch (attribute) {
+    case Attribute.HeartRate:
+      return record.heart_rate;
+    case Attribute.Cadence:
+      return record.cadence;
+    case Attribute.Speed:
+      return record.speed;
+  }
+}
+
 interface FilterConfig {
   heartRate: [number, number];
   cadence: [number, number];
@@ -92,17 +133,18 @@ export enum Attribute {
   Cadence,
   Speed
 }
+const ALL_ATTRIBUTES = allVariants<Attribute>(Attribute);
 
-function keyFromAttributeAndBoundType(
+function pendingKeyFromAttributeAndBoundType(
   attribute: Attribute,
   boundType: BoundType
 ): keyof Filter {
-  const beginning = keyBeginningAttribute(attribute);
-  const ending = keyEndingFromBoundType(boundType);
+  const beginning = pendingKeyBeginningAttribute(attribute);
+  const ending = pendingKeyEndingFromBoundType(boundType);
   return (beginning + ending) as keyof Filter;
 }
 
-function keyBeginningAttribute(attribute: Attribute): string {
+function pendingKeyBeginningAttribute(attribute: Attribute): string {
   switch (attribute) {
     case Attribute.HeartRate:
       return "pendingHeartRate";
@@ -113,7 +155,7 @@ function keyBeginningAttribute(attribute: Attribute): string {
   }
 }
 
-function keyEndingFromBoundType(boundType: BoundType): string {
+function pendingKeyEndingFromBoundType(boundType: BoundType): string {
   switch (boundType) {
     case BoundType.Min:
       return "Min";

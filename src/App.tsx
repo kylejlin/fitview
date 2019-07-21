@@ -277,11 +277,26 @@ export default class App extends React.Component<{}, AppState> {
                             .map((record, i) => (
                               <Circle
                                 key={record.index}
-                                fill={
-                                  i === 0
-                                    ? ACTIVE_RECORD_DOT_FILL
-                                    : INACTIVE_RECORD_DOT_FILL
-                                }
+                                fill={(() => {
+                                  if (
+                                    this.state.filter.isAttributeIllegal(
+                                      Attribute.HeartRate,
+                                      record
+                                    )
+                                  ) {
+                                    return ILLEGAL_ATTRIBUTE_RECORD_DOT_FILL;
+                                  } else if (
+                                    this.state.filter.isAnyAttributeIllegal(
+                                      record
+                                    )
+                                  ) {
+                                    return ILLEGAL_OTHER_ATTRIBUTE_RECORD_DOT_FILL;
+                                  } else {
+                                    return i === 0
+                                      ? ACTIVE_RECORD_DOT_FILL
+                                      : INACTIVE_RECORD_DOT_FILL;
+                                  }
+                                })()}
                                 x={
                                   window.innerWidth * (i / width) +
                                   recordDotRadius()
@@ -594,6 +609,8 @@ interface ActivityViewState {
 const STARTING_WIDTH = 87;
 const ACTIVE_RECORD_DOT_FILL = "#3ce";
 const INACTIVE_RECORD_DOT_FILL = "#08b";
+const ILLEGAL_ATTRIBUTE_RECORD_DOT_FILL = "red";
+const ILLEGAL_OTHER_ATTRIBUTE_RECORD_DOT_FILL = "orange";
 
 function timelineHeight(): number {
   return 0.2 * axes.minor;

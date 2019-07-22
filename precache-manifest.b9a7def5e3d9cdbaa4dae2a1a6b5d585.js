@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "589e91985b1638802aecfedef4164f54",
+    "revision": "4d733c55ff54835bc9863eabac907c0d",
     "url": "/fitview/index.html"
   },
   {

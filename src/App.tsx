@@ -141,7 +141,7 @@ export default class App extends React.Component<{}, AppState> {
             return (
               <div className="ActivityView">
                 <div className="Head">
-                  <div className="Header">
+                  <div className="SectionHeader">
                     {monthString(startTime.getMonth()) +
                       " " +
                       startTime.getDate() +
@@ -171,13 +171,13 @@ export default class App extends React.Component<{}, AppState> {
                 <div className="Body">
                   <div className="ActivityOverview">
                     <div className="Entry">
-                      Sport:{" "}
+                      <span className="Key">Sport: </span>
                       <span className="Value">
                         {capitalizeFirstLetter(sport)}
                       </span>
                     </div>
                     <div className="Entry">
-                      Date:{" "}
+                      <span className="Key">Date: </span>
                       <span className="Value">
                         {dayOfWeekString(startTime.getDay())}{" "}
                         {startTime.getDate()}{" "}
@@ -186,7 +186,7 @@ export default class App extends React.Component<{}, AppState> {
                       </span>
                     </div>
                     <div className="Entry">
-                      Start location:{" "}
+                      <span className="Key">Start location: </span>
                       <span className="Value">
                         {startLocation.match({
                           pending: () => "loading",
@@ -211,7 +211,7 @@ export default class App extends React.Component<{}, AppState> {
                       </span>
                     </div>
                     <div className="Entry">
-                      End location:{" "}
+                      <span className="Key">End location: </span>
                       <span className="Value">
                         {endLocation.match({
                           pending: () => "loading",
@@ -236,13 +236,24 @@ export default class App extends React.Component<{}, AppState> {
                       </span>
                     </div>
                     <div className="Entry">
-                      Total duration:{" "}
+                      <span className="Key">Total distance: </span>
+                      <span className="Value">
+                        {roundTo(metersToMiles(activity.total_distance), 2)}
+                      </span>
+                    </div>
+                    <div className="Entry">
+                      <span className="Key">Total duration: </span>
                       <span className="Value">
                         {getDurationFromSecs(total_elapsed_time)}
-                      </span>{" "}
-                      Start time:{" "}
-                      <span className="Value">{getTime(startTime)}</span> End
-                      time: <span className="Value">{getTime(endTime)}</span>
+                      </span>
+                    </div>
+                    <div className="Entry">
+                      <span className="Key">Start time: </span>
+                      <span className="Value">{getTime(startTime)}</span>
+                    </div>
+                    <div className="Entry">
+                      <span className="Key">End time: </span>
+                      <span className="Value">{getTime(endTime)}</span>
                     </div>
                   </div>
 
@@ -278,6 +289,8 @@ export default class App extends React.Component<{}, AppState> {
                   <SectionDivider />
 
                   <div className="FilterContainer">
+                    <div className="SectionHeader">Filters: </div>
+
                     <div className="Filter">
                       <div className="FilterAttribute">Heart Rate</div>
                       <label className="FilterMinLabel">
@@ -360,6 +373,8 @@ export default class App extends React.Component<{}, AppState> {
                   <SectionDivider />
 
                   <div className="CumulativesContainer">
+                    <div className="SectionHeader">Filtered stats: </div>
+
                     <div className="Entry">
                       <span className="Key">Total duration: </span>
                       <span className="Value">

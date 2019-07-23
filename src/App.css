@@ -46,13 +46,13 @@
   background-color: #111;
   width: 100vw;
   height: var(--head-height);
-  font-size: calc(0.06 * var(--minor-axis));
   position: absolute;
   top: 0;
 }
 
-.Header {
+.SectionHeader {
   color: #eee;
+  font-size: calc(0.06 * var(--minor-axis));
   font-weight: bold;
   padding: calc(0.02 * var(--minor-axis)) 0 calc(0.02 * var(--minor-axis))
     calc(0.01 * var(--minor-axis));
@@ -81,20 +81,16 @@
   overflow: auto;
 }
 
-.ActivityOverview {
-  background-color: #222;
-  color: #f58404;
-  width: 100vw;
-  font-size: calc(0.06 * var(--minor-axis));
-}
-
 .Entry {
+  color: #f58404;
+  font-size: calc(0.06 * var(--minor-axis));
   padding: calc(0.02 * var(--minor-axis)) 0 calc(0.02 * var(--minor-axis))
     calc(0.01 * var(--minor-axis));
 }
 
 .Value {
   color: #eee;
+  font-size: calc(0.06 * var(--minor-axis));
   font-weight: bold;
 }
 
@@ -137,11 +133,4 @@
   width: var(--width);
   border-radius: var(--width);
   padding: calc(0.01 * var(--major-axis));
-}
-
-.CumulativesContainer {
-  background-color: #222;
-  color: #f58404;
-  width: 100vw;
-  font-size: calc(0.06 * var(--minor-axis));
 }

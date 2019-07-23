@@ -8,6 +8,9 @@ import Timeline from "./components/Timeline";
 
 import { isOrIsAncestorOf, EasyFit } from "./lib";
 
+import roundTo from "round-to";
+
+import { getCumulatives, Cumulatives } from "./cumulatives";
 import { BoundType, Filter } from "./filter";
 import { getActivity, Activity, Attribute } from "./getActivity";
 import {
@@ -16,11 +19,13 @@ import {
   dayOfWeekString,
   monthString,
   getTime,
-  getDurationFromMillis,
+  getDurationFromSecs,
   reverseGeocode,
   lerpDate,
   getOffsetIndex,
+  metersToMiles,
   Address,
+  fractionalMinuteToPaceString,
 } from "./helpers";
 import Option from "./Option";
 import Qprom from "./Qprom";
@@ -44,7 +49,7 @@ export default class App extends React.Component<{}, AppState> {
       mouseDownTarget: Option.none(),
       filter: new Filter({
         heartRate: [0, 200],
-        cadence: [0, 125],
+        cadence: [0, 200],
         speed: [0, 40],
       }),
     };
@@ -121,6 +126,8 @@ export default class App extends React.Component<{}, AppState> {
             offsetTime,
             offsetIndex,
             width,
+
+            cumulatives,
           }) => {
             const {
               sport,
@@ -231,7 +238,7 @@ export default class App extends React.Component<{}, AppState> {
                     <div className="Entry">
                       Total duration:{" "}
                       <span className="Value">
-                        {getDurationFromMillis(total_elapsed_time)}
+                        {getDurationFromSecs(total_elapsed_time)}
                       </span>{" "}
                       Start time:{" "}
                       <span className="Value">{getTime(startTime)}</span> End
@@ -349,6 +356,38 @@ export default class App extends React.Component<{}, AppState> {
                       </label>
                     </div>
                   </div>
+
+                  <SectionDivider />
+
+                  <div className="CumulativesContainer">
+                    <div className="Entry">
+                      <span className="Key">Total duration: </span>
+                      <span className="Value">
+                        {getDurationFromSecs(cumulatives.totalDuration)}
+                      </span>
+                    </div>
+
+                    <div className="Entry">
+                      <span className="Key">Total distance (mi): </span>
+                      <span className="Value">
+                        {roundTo(metersToMiles(cumulatives.totalDistance), 2)}
+                      </span>
+                    </div>
+
+                    <div className="Entry">
+                      <span className="Key">Average pace (min/mi): </span>
+                      <span className="Value">
+                        {fractionalMinuteToPaceString(cumulatives.averagePace)}
+                      </span>
+                    </div>
+
+                    <div className="Entry">
+                      <span className="Key">Average heart rate (bpm): </span>
+                      <span className="Value">
+                        {Math.floor(cumulatives.averageHeartRate)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             );
@@ -407,6 +446,8 @@ export default class App extends React.Component<{}, AppState> {
                   offsetTime: activity.start_time,
                   offsetIndex: 0,
                   width: STARTING_WIDTH,
+
+                  cumulatives: getCumulatives(activity, this.state.filter),
                 }),
               });
             }
@@ -536,8 +577,13 @@ export default class App extends React.Component<{}, AppState> {
   }
 
   onSyncPendingBounds() {
+    const filter = this.state.filter.syncPendingBoundsWithActualBounds();
     this.setState({
-      filter: this.state.filter.syncPendingBoundsWithActualBounds(),
+      filter,
+      activity: this.state.activity.map((state) => ({
+        ...state,
+        cumulatives: getCumulatives(state.activity, filter),
+      })),
     });
   }
 }
@@ -559,6 +605,8 @@ interface ActivityViewState {
   offsetTime: Date;
   offsetIndex: number;
   width: number;
+
+  cumulatives: Cumulatives;
 }
 
 const STARTING_WIDTH = 87;

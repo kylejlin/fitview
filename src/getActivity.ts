@@ -176,3 +176,30 @@ export function getAttributeDisplayNameAndUnits(
       return "Pace (min/mi)";
   }
 }
+
+export function cloneActivity(original: Activity): Activity {
+  const sessions: Session[] = original.sessions.map(cloneSession);
+  const laps: Lap[] = sessions.map((session) => session.laps).flat();
+  const records: Record[] = sessions.map((session) => session.records).flat();
+  return { ...original, sessions, laps, records };
+}
+
+function cloneSession(original: Session): Session {
+  const laps = original.laps.map(cloneLap);
+  const records = laps.map((lap: Lap) => lap.records).flat();
+  return { ...original, laps, records };
+}
+
+function cloneLap(original: Lap): Lap {
+  const records = original.records.map(cloneRecord);
+  return { ...original, records };
+}
+
+function cloneRecord(original: Record): Record {
+  const timestamp = cloneDate(original.timestamp);
+  return { ...original, timestamp };
+}
+
+function cloneDate(original: Date): Date {
+  return new Date(original.getTime());
+}

@@ -49,10 +49,10 @@ export function getTime(date: Date): string {
 }
 
 export function getActivityDuration(activity: any): string {
-  return getDurationFromMillis(activity);
+  return getDurationFromSecs(activity);
 }
 
-export function getDurationFromMillis(millis: number): string {
+export function getDurationFromSecs(millis: number): string {
   const hours = Math.floor(millis / 3600);
   const minutes = Math.floor((millis % 3600) / 60);
   const seconds = Math.floor(millis % 60);
@@ -133,4 +133,12 @@ export function fractionalMinuteToPaceString(minutes: number): string {
       Math.floor(minutes) + ":" + zeroPad(Math.floor(60 * fractionalPart), 2)
     );
   }
+}
+
+export function average(numbers: number[]): number {
+  return sum(numbers) / numbers.length;
+}
+
+export function metersToMiles(meters: number): number {
+  return meters / 1609.34;
 }

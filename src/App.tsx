@@ -463,6 +463,8 @@ export default class App extends React.Component<{}, AppState> {
                   width: STARTING_WIDTH,
 
                   cumulatives: getCumulatives(activity, this.state.filter),
+
+                  timelineScroll: Option.none(),
                 }),
               });
             }
@@ -492,41 +494,108 @@ export default class App extends React.Component<{}, AppState> {
   }
 
   onMouseDown(event: React.MouseEvent) {
-    this.setState({
-      mouseDownTarget: Option.some(event.target as Element),
-    });
+    this.onPointerDown(event.target as Element, event.clientX, event.clientY);
+  }
+
+  onTouchStart(event: React.TouchEvent) {
+    const touch = event.touches[0];
+    this.onPointerDown(event.target as Element, touch.clientX, touch.clientY);
+  }
+
+  onPointerDown(target: Element, x: number, y: number) {
+    this.setState((state) => ({
+      mouseDownTarget: Option.some(target),
+      activity: state.activity.map((state) => ({
+        ...state,
+        timelineScroll: Option.some({
+          initialPointerLocation: { x, y },
+          initialOffsetIndex: state.offsetIndex,
+        }),
+      })),
+    }));
   }
 
   onMouseUp() {
+    this.onPointerUp();
+  }
+
+  onTouchEnd() {
+    this.onPointerUp();
+  }
+
+  onPointerUp() {
     this.setState((state) => ({
-      ...state,
+      activity: state.activity.map((state) => ({
+        ...state,
+        timelineScroll: Option.none(),
+      })),
       mouseDownTarget: Option.none(),
     }));
   }
 
   onMouseMove(event: React.MouseEvent) {
-    if (this.isCursorDragged() && this.minimapRef && this.minimapRef.current) {
-      const rect = this.minimapRef.current.getBoundingClientRect();
-      const dx = event.clientX - rect.left;
-      const rawCompletionFactor = dx / rect.width;
-      const clampedCompletionFactor = Math.min(
-        1,
-        Math.max(0, rawCompletionFactor)
-      );
-      this.setState((state) => ({
-        activity: state.activity.map((state) => {
-          const offsetTime = lerpDate(
-            state.activity.start_time,
-            state.activity.end_time,
-            clampedCompletionFactor
-          );
-          return {
-            ...state,
-            offsetTime,
-            offsetIndex: getOffsetIndex(state.activity.records, offsetTime),
-          };
-        }),
-      }));
+    this.onPointerMove(event.clientX, event.clientY);
+  }
+
+  onTouchMove(event: React.TouchEvent) {
+    const touch = event.touches[0];
+    this.onPointerMove(touch.clientX, touch.clientY);
+  }
+
+  onPointerMove(x: number, y: number) {
+    if (this.minimapRef && this.minimapRef.current) {
+      if (this.isCursorDragged()) {
+        const rect = this.minimapRef.current.getBoundingClientRect();
+        const dx = x - rect.left;
+        const rawCompletionFactor = dx / rect.width;
+        const clampedCompletionFactor = Math.min(
+          1,
+          Math.max(0, rawCompletionFactor)
+        );
+        this.setState((state) => ({
+          activity: state.activity.map((state) => {
+            const offsetTime = lerpDate(
+              state.activity.start_time,
+              state.activity.end_time,
+              clampedCompletionFactor
+            );
+            return {
+              ...state,
+              offsetTime,
+              offsetIndex: getOffsetIndex(state.activity.records, offsetTime),
+            };
+          }),
+        }));
+      } else if (this.isTimelineDragged()) {
+        this.setState((state) => ({
+          activity: state.activity.map((activityState) => {
+            return activityState.timelineScroll.match({
+              none: () => activityState,
+              some: ({ initialPointerLocation, initialOffsetIndex }) => {
+                const dx = x - initialPointerLocation.x;
+                const widthFactor = dx / window.innerWidth;
+                const deltaIndex = Math.floor(
+                  -activityState.width * widthFactor
+                );
+                const newIndex = Math.max(
+                  0,
+                  Math.min(
+                    activityState.activity.records.length - 1,
+                    initialOffsetIndex + deltaIndex
+                  )
+                );
+                const newTime =
+                  activityState.activity.records[newIndex].timestamp;
+                return {
+                  ...activityState,
+                  offsetIndex: newIndex,
+                  offsetTime: newTime,
+                };
+              },
+            });
+          }),
+        }));
+      }
     }
   }
 
@@ -543,38 +612,11 @@ export default class App extends React.Component<{}, AppState> {
     });
   }
 
-  onTouchStart(event: React.TouchEvent) {
-    this.onMouseDown((event as unknown) as React.MouseEvent);
-  }
-
-  onTouchMove(event: React.TouchEvent) {
-    if (this.isCursorDragged() && this.minimapRef && this.minimapRef.current) {
-      const rect = this.minimapRef.current.getBoundingClientRect();
-      const dx = event.touches[0].clientX - rect.left;
-      const rawCompletionFactor = dx / rect.width;
-      const clampedCompletionFactor = Math.min(
-        1,
-        Math.max(0, rawCompletionFactor)
-      );
-      this.setState((state) => ({
-        activity: state.activity.map((state) => {
-          const offsetTime = lerpDate(
-            state.activity.start_time,
-            state.activity.end_time,
-            clampedCompletionFactor
-          );
-          return {
-            ...state,
-            offsetTime,
-            offsetIndex: getOffsetIndex(state.activity.records, offsetTime),
-          };
-        }),
-      }));
-    }
-  }
-
-  onTouchEnd() {
-    this.onMouseUp();
+  isTimelineDragged(): boolean {
+    return this.state.mouseDownTarget.match({
+      none: () => false,
+      some: (target) => target.tagName === "CANVAS",
+    });
   }
 
   onChangePendingBound(
@@ -622,6 +664,11 @@ interface ActivityViewState {
   width: number;
 
   cumulatives: Cumulatives;
+
+  timelineScroll: Option<{
+    initialPointerLocation: { x: number; y: number };
+    initialOffsetIndex: number;
+  }>;
 }
 
 const STARTING_WIDTH = 87;

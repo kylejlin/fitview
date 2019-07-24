@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/fitview/static/css/main.2f9e1d06.chunk.css",
-    "main.js": "/fitview/static/js/main.a0221c7f.chunk.js",
-    "main.js.map": "/fitview/static/js/main.a0221c7f.chunk.js.map",
+    "main.css": "/fitview/static/css/main.ff8b9b9f.chunk.css",
+    "main.js": "/fitview/static/js/main.86fd9d3b.chunk.js",
+    "main.js.map": "/fitview/static/js/main.86fd9d3b.chunk.js.map",
     "runtime~main.js": "/fitview/static/js/runtime~main.3054ca64.js",
     "runtime~main.js.map": "/fitview/static/js/runtime~main.3054ca64.js.map",
     "static/js/2.a8e4a05a.chunk.js": "/fitview/static/js/2.a8e4a05a.chunk.js",
     "static/js/2.a8e4a05a.chunk.js.map": "/fitview/static/js/2.a8e4a05a.chunk.js.map",
     "index.html": "/fitview/index.html",
-    "precache-manifest.a811b3a7b5b8dae9dde30849fbca4670.js": "/fitview/precache-manifest.a811b3a7b5b8dae9dde30849fbca4670.js",
+    "precache-manifest.75f8b215746d604a7452cd2d1fa1c435.js": "/fitview/precache-manifest.75f8b215746d604a7452cd2d1fa1c435.js",
     "service-worker.js": "/fitview/service-worker.js",
-    "static/css/main.2f9e1d06.chunk.css.map": "/fitview/static/css/main.2f9e1d06.chunk.css.map"
+    "static/css/main.ff8b9b9f.chunk.css.map": "/fitview/static/css/main.ff8b9b9f.chunk.css.map"
   }
 }

@@ -268,6 +268,8 @@ export default class App extends React.Component<{}, AppState> {
                       viewedDuration={viewedDuration}
                       filter={this.state.filter}
                       shouldConvertRpmToSpm={shouldConvertRpmToSpm}
+                      verticalMin={0}
+                      verticalMax={200}
                     />
                     <Timeline
                       attribute={Attribute.Cadence}
@@ -276,6 +278,8 @@ export default class App extends React.Component<{}, AppState> {
                       viewedDuration={viewedDuration}
                       filter={this.state.filter}
                       shouldConvertRpmToSpm={shouldConvertRpmToSpm}
+                      verticalMin={0}
+                      verticalMax={200}
                     />
                     <Timeline
                       attribute={Attribute.Pace}
@@ -284,6 +288,8 @@ export default class App extends React.Component<{}, AppState> {
                       viewedDuration={viewedDuration}
                       filter={this.state.filter}
                       shouldConvertRpmToSpm={shouldConvertRpmToSpm}
+                      verticalMin={0}
+                      verticalMax={45}
                     />
                   </div>
 

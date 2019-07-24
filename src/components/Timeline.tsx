@@ -20,7 +20,10 @@ export default function Timeline({
   viewedDuration,
   filter,
   shouldConvertRpmToSpm,
+  verticalMin,
+  verticalMax,
 }: Props): React.ReactElement {
+  const range = verticalMax - verticalMin;
   return (
     <div className="Timeline">
       <div className="TimelineLabel">
@@ -92,7 +95,8 @@ export default function Timeline({
                     value:
                       timelineHeight() -
                       timelineHeight() *
-                        (getRecordAttribute(record, attribute) / 200),
+                        ((getRecordAttribute(record, attribute) - verticalMin) /
+                          range),
                   })}
                   radius={recordDotRadius()}
                 />
@@ -112,6 +116,8 @@ interface Props {
   viewedDuration: number;
   filter: Filter;
   shouldConvertRpmToSpm: boolean;
+  verticalMin: number;
+  verticalMax: number;
 }
 
 const ACTIVE_RECORD_DOT_FILL = "#3ce";

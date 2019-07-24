@@ -24,8 +24,10 @@ import {
   lerpDate,
   getOffsetIndex,
   metersToMiles,
-  Address,
   fractionalMinuteToPaceString,
+  getFirstRecordTimestampOrActivityStartTime,
+  getLastRecordTimestampOrActivityEndTime,
+  Address,
 } from "./helpers";
 import Option from "./Option";
 import Qprom from "./Qprom";
@@ -129,13 +131,11 @@ export default class App extends React.Component<{}, AppState> {
 
             cumulatives,
           }) => {
-            const {
-              sport,
-              records,
-              total_elapsed_time,
-              start_time: startTime,
-              end_time: endTime,
-            } = activity;
+            const { sport, records, total_elapsed_time } = activity;
+            const startTime = getFirstRecordTimestampOrActivityStartTime(
+              activity
+            );
+            const endTime = getLastRecordTimestampOrActivityEndTime(activity);
             const shouldConvertRpmToSpm = sport === "running";
 
             return (
@@ -458,7 +458,9 @@ export default class App extends React.Component<{}, AppState> {
                   ),
                   isEndLocationTruncated: true,
 
-                  offsetTime: activity.start_time,
+                  offsetTime: getFirstRecordTimestampOrActivityStartTime(
+                    activity
+                  ),
                   offsetIndex: 0,
                   viewedDuration: STARTING_VIEWED_DURATION,
 
@@ -509,7 +511,7 @@ export default class App extends React.Component<{}, AppState> {
         ...state,
         timelineScroll: Option.some({
           initialPointerLocation: { x, y },
-          initialOffsetIndex: state.offsetIndex,
+          initialOffsetTime: state.offsetTime,
         }),
       })),
     }));
@@ -554,9 +556,15 @@ export default class App extends React.Component<{}, AppState> {
         );
         this.setState((state) => ({
           activity: state.activity.map((state) => {
+            const startTime = getFirstRecordTimestampOrActivityStartTime(
+              state.activity
+            );
+            const endTime = getLastRecordTimestampOrActivityEndTime(
+              state.activity
+            );
             const offsetTime = lerpDate(
-              state.activity.start_time,
-              state.activity.end_time,
+              startTime,
+              endTime,
               clampedCompletionFactor
             );
             return {
@@ -567,36 +575,39 @@ export default class App extends React.Component<{}, AppState> {
           }),
         }));
       } else if (this.isTimelineDragged()) {
-        // TODO Reenable support for directly dragging timelines
-        //
-        // this.setState((state) => ({
-        //   activity: state.activity.map((activityState) => {
-        //     return activityState.timelineScroll.match({
-        //       none: () => activityState,
-        //       some: ({ initialPointerLocation, initialOffsetIndex }) => {
-        //         const dx = x - initialPointerLocation.x;
-        //         const widthFactor = dx / window.innerWidth;
-        //         const deltaIndex = Math.floor(
-        //           -activityState.width * widthFactor
-        //         );
-        //         const newIndex = Math.max(
-        //           0,
-        //           Math.min(
-        //             activityState.activity.records.length - 1,
-        //             initialOffsetIndex + deltaIndex
-        //           )
-        //         );
-        //         const newTime =
-        //           activityState.activity.records[newIndex].timestamp;
-        //         return {
-        //           ...activityState,
-        //           offsetIndex: newIndex,
-        //           offsetTime: newTime,
-        //         };
-        //       },
-        //     });
-        //   }),
-        // }));
+        this.setState((state) => ({
+          activity: state.activity.map((activityState) => {
+            return activityState.timelineScroll.match({
+              none: () => activityState,
+              some: ({ initialPointerLocation, initialOffsetTime }) => {
+                const dx = x - initialPointerLocation.x;
+                const widthFactor = dx / window.innerWidth;
+                const deltaTime = -activityState.viewedDuration * widthFactor;
+                const newTimeMillis = initialOffsetTime.getTime() + deltaTime;
+                const startTime = getFirstRecordTimestampOrActivityStartTime(
+                  activityState.activity
+                );
+                const endTime = getLastRecordTimestampOrActivityEndTime(
+                  activityState.activity
+                );
+                const clampedMillis = Math.max(
+                  startTime.getTime(),
+                  Math.min(endTime.getTime(), newTimeMillis)
+                );
+                const newTime = new Date(clampedMillis);
+                const newIndex = getOffsetIndex(
+                  activityState.activity.records,
+                  newTime
+                );
+                return {
+                  ...activityState,
+                  offsetTime: newTime,
+                  offsetIndex: newIndex,
+                };
+              },
+            });
+          }),
+        }));
       }
     }
   }
@@ -669,7 +680,7 @@ interface ActivityViewState {
 
   timelineScroll: Option<{
     initialPointerLocation: { x: number; y: number };
-    initialOffsetIndex: number;
+    initialOffsetTime: Date;
   }>;
 }
 

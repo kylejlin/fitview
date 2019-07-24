@@ -1,5 +1,5 @@
 import { geocoder } from "./lib";
-import { Record } from "./getActivity";
+import { Activity, Record } from "./getActivity";
 
 export function getActivityRecords(activity: any): any[] {
   return activity.sessions
@@ -154,5 +154,25 @@ export function sliceDuration(records: Record[], duration: number): Record[] {
     } else {
       return records.slice(0, endIndex);
     }
+  }
+}
+
+export function getFirstRecordTimestampOrActivityStartTime(
+  activity: Activity
+): Date {
+  if (activity.records.length === 0) {
+    return activity.start_time;
+  } else {
+    return activity.records[0].timestamp;
+  }
+}
+
+export function getLastRecordTimestampOrActivityEndTime(
+  activity: Activity
+): Date {
+  if (activity.records.length === 0) {
+    return activity.end_time;
+  } else {
+    return activity.records[activity.records.length - 1].timestamp;
   }
 }

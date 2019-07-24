@@ -176,3 +176,15 @@ export function getLastRecordTimestampOrActivityEndTime(
     return activity.records[activity.records.length - 1].timestamp;
   }
 }
+
+export function clamp({
+  min,
+  max,
+  value,
+}: {
+  min: number;
+  max: number;
+  value: number;
+}): number {
+  return Math.min(max, Math.max(min, value));
+}

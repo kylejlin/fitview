@@ -27,6 +27,7 @@ import {
   fractionalMinuteToPaceString,
   getFirstRecordTimestampOrActivityStartTime,
   getLastRecordTimestampOrActivityEndTime,
+  clamp,
   Address,
 } from "./helpers";
 import Option from "./Option";
@@ -550,10 +551,11 @@ export default class App extends React.Component<{}, AppState> {
         const rect = this.minimapRef.current.getBoundingClientRect();
         const dx = x - rect.left;
         const rawCompletionFactor = dx / rect.width;
-        const clampedCompletionFactor = Math.min(
-          1,
-          Math.max(0, rawCompletionFactor)
-        );
+        const clampedCompletionFactor = clamp({
+          min: 0,
+          max: 1,
+          value: rawCompletionFactor,
+        });
         this.setState((state) => ({
           activity: state.activity.map((state) => {
             const startTime = getFirstRecordTimestampOrActivityStartTime(
@@ -590,10 +592,11 @@ export default class App extends React.Component<{}, AppState> {
                 const endTime = getLastRecordTimestampOrActivityEndTime(
                   activityState.activity
                 );
-                const clampedMillis = Math.max(
-                  startTime.getTime(),
-                  Math.min(endTime.getTime(), newTimeMillis)
-                );
+                const clampedMillis = clamp({
+                  min: startTime.getTime(),
+                  max: endTime.getTime(),
+                  value: newTimeMillis,
+                });
                 const newTime = new Date(clampedMillis);
                 const newIndex = getOffsetIndex(
                   activityState.activity.records,

@@ -11,7 +11,7 @@ import {
   Attribute,
   Record,
 } from "../getActivity";
-import { fractionalMinuteToPaceString, sliceDuration } from "../helpers";
+import { clamp, fractionalMinuteToPaceString, sliceDuration } from "../helpers";
 
 export default function Timeline({
   attribute,
@@ -86,12 +86,14 @@ export default function Timeline({
                     window.innerWidth * (deltaTime / viewedDuration) +
                     recordDotRadius()
                   }
-                  y={Math.max(
-                    0,
-                    timelineHeight() -
+                  y={clamp({
+                    min: 0,
+                    max: timelineHeight(),
+                    value:
+                      timelineHeight() -
                       timelineHeight() *
-                        (getRecordAttribute(record, attribute) / 200)
-                  )}
+                        (getRecordAttribute(record, attribute) / 200),
+                  })}
                   radius={recordDotRadius()}
                 />
               );

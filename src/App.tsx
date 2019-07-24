@@ -37,12 +37,23 @@ export default class App extends React.Component<{}, AppState> {
   private fileRef: React.RefObject<HTMLInputElement>;
   private minimapRef: React.RefObject<HTMLDivElement>;
 
-  private onChangePendingHeartRateMin: (event: React.ChangeEvent) => void;
-  private onChangePendingHeartRateMax: (event: React.ChangeEvent) => void;
-  private onChangePendingCadenceMin: (event: React.ChangeEvent) => void;
-  private onChangePendingCadenceMax: (event: React.ChangeEvent) => void;
-  private onChangePendingPaceMin: (event: React.ChangeEvent) => void;
-  private onChangePendingPaceMax: (event: React.ChangeEvent) => void;
+  private onChangePendingFilterHeartRateMin: (event: React.ChangeEvent) => void;
+  private onChangePendingFilterHeartRateMax: (event: React.ChangeEvent) => void;
+  private onChangePendingFilterCadenceMin: (event: React.ChangeEvent) => void;
+  private onChangePendingFilterCadenceMax: (event: React.ChangeEvent) => void;
+  private onChangePendingFilterPaceMin: (event: React.ChangeEvent) => void;
+  private onChangePendingFilterPaceMax: (event: React.ChangeEvent) => void;
+
+  private onChangePendingTimelineHeartRateMin: (
+    event: React.ChangeEvent
+  ) => void;
+  private onChangePendingTimelineHeartRateMax: (
+    event: React.ChangeEvent
+  ) => void;
+  private onChangePendingTimelineCadenceMin: (event: React.ChangeEvent) => void;
+  private onChangePendingTimelineCadenceMax: (event: React.ChangeEvent) => void;
+  private onChangePendingTimelinePaceMin: (event: React.ChangeEvent) => void;
+  private onChangePendingTimelinePaceMax: (event: React.ChangeEvent) => void;
 
   constructor(props: object) {
     super(props);
@@ -54,6 +65,11 @@ export default class App extends React.Component<{}, AppState> {
         heartRate: [0, 200],
         cadence: [0, 200],
         pace: [0, 15],
+      }),
+      timelineBounds: new Filter({
+        heartRate: [100, 190],
+        cadence: [0, 225],
+        pace: [0, 30],
       }),
     };
 
@@ -78,20 +94,36 @@ export default class App extends React.Component<{}, AppState> {
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onTouchMove = this.onTouchMove.bind(this);
     this.onTouchEnd = this.onTouchEnd.bind(this);
-    this.onSyncPendingBounds = this.onSyncPendingBounds.bind(this);
+    this.onSyncPendingFilterBounds = this.onSyncPendingFilterBounds.bind(this);
+    this.onSyncPendingTimelineBounds = this.onSyncPendingTimelineBounds.bind(
+      this
+    );
 
-    this.onChangePendingHeartRateMin = (e) =>
-      this.onChangePendingBound(Attribute.HeartRate, BoundType.Min, e);
-    this.onChangePendingHeartRateMax = (e) =>
-      this.onChangePendingBound(Attribute.HeartRate, BoundType.Max, e);
-    this.onChangePendingCadenceMin = (e) =>
-      this.onChangePendingBound(Attribute.Cadence, BoundType.Min, e);
-    this.onChangePendingCadenceMax = (e) =>
-      this.onChangePendingBound(Attribute.Cadence, BoundType.Max, e);
-    this.onChangePendingPaceMin = (e) =>
-      this.onChangePendingBound(Attribute.Pace, BoundType.Min, e);
-    this.onChangePendingPaceMax = (e) =>
-      this.onChangePendingBound(Attribute.Pace, BoundType.Max, e);
+    this.onChangePendingFilterHeartRateMin = (e) =>
+      this.onChangePendingFilterBound(Attribute.HeartRate, BoundType.Min, e);
+    this.onChangePendingFilterHeartRateMax = (e) =>
+      this.onChangePendingFilterBound(Attribute.HeartRate, BoundType.Max, e);
+    this.onChangePendingFilterCadenceMin = (e) =>
+      this.onChangePendingFilterBound(Attribute.Cadence, BoundType.Min, e);
+    this.onChangePendingFilterCadenceMax = (e) =>
+      this.onChangePendingFilterBound(Attribute.Cadence, BoundType.Max, e);
+    this.onChangePendingFilterPaceMin = (e) =>
+      this.onChangePendingFilterBound(Attribute.Pace, BoundType.Min, e);
+    this.onChangePendingFilterPaceMax = (e) =>
+      this.onChangePendingFilterBound(Attribute.Pace, BoundType.Max, e);
+
+    this.onChangePendingTimelineHeartRateMin = (e) =>
+      this.onChangePendingTimelineBound(Attribute.HeartRate, BoundType.Min, e);
+    this.onChangePendingTimelineHeartRateMax = (e) =>
+      this.onChangePendingTimelineBound(Attribute.HeartRate, BoundType.Max, e);
+    this.onChangePendingTimelineCadenceMin = (e) =>
+      this.onChangePendingTimelineBound(Attribute.Cadence, BoundType.Min, e);
+    this.onChangePendingTimelineCadenceMax = (e) =>
+      this.onChangePendingTimelineBound(Attribute.Cadence, BoundType.Max, e);
+    this.onChangePendingTimelinePaceMin = (e) =>
+      this.onChangePendingTimelineBound(Attribute.Pace, BoundType.Min, e);
+    this.onChangePendingTimelinePaceMax = (e) =>
+      this.onChangePendingTimelineBound(Attribute.Pace, BoundType.Max, e);
   }
 
   render() {
@@ -268,8 +300,8 @@ export default class App extends React.Component<{}, AppState> {
                       viewedDuration={viewedDuration}
                       filter={this.state.filter}
                       shouldConvertRpmToSpm={shouldConvertRpmToSpm}
-                      verticalMin={0}
-                      verticalMax={200}
+                      verticalMin={this.state.timelineBounds.heartRate[0]}
+                      verticalMax={this.state.timelineBounds.heartRate[1]}
                     />
                     <Timeline
                       attribute={Attribute.Cadence}
@@ -278,8 +310,8 @@ export default class App extends React.Component<{}, AppState> {
                       viewedDuration={viewedDuration}
                       filter={this.state.filter}
                       shouldConvertRpmToSpm={shouldConvertRpmToSpm}
-                      verticalMin={0}
-                      verticalMax={200}
+                      verticalMin={this.state.timelineBounds.cadence[0]}
+                      verticalMax={this.state.timelineBounds.cadence[1]}
                     />
                     <Timeline
                       attribute={Attribute.Pace}
@@ -288,90 +320,90 @@ export default class App extends React.Component<{}, AppState> {
                       viewedDuration={viewedDuration}
                       filter={this.state.filter}
                       shouldConvertRpmToSpm={shouldConvertRpmToSpm}
-                      verticalMin={0}
-                      verticalMax={45}
+                      verticalMin={this.state.timelineBounds.pace[0]}
+                      verticalMax={this.state.timelineBounds.pace[1]}
                     />
                   </div>
 
                   <SectionDivider />
 
-                  <div className="FilterContainer">
+                  <div className="BoundsContainer">
                     <div className="SectionHeader">Filters: </div>
 
-                    <div className="Filter">
-                      <div className="FilterAttribute">Heart Rate</div>
-                      <label className="FilterMinLabel">
+                    <div className="Bound">
+                      <div className="BoundAttribute">Heart Rate</div>
+                      <label className="BoundMinLabel">
                         Min:{" "}
                         <input
-                          className="FilterMin"
+                          className="BoundMin"
                           type="text"
                           pattern="\d*"
                           value={this.state.filter.pendingHeartRateMin}
-                          onChange={this.onChangePendingHeartRateMin}
-                          onBlur={this.onSyncPendingBounds}
+                          onChange={this.onChangePendingFilterHeartRateMin}
+                          onBlur={this.onSyncPendingFilterBounds}
                         />
                       </label>
-                      <label className="FilterMaxLabel">
+                      <label className="BoundMaxLabel">
                         Max:{" "}
                         <input
-                          className="FilterMax"
+                          className="BoundMax"
                           type="text"
                           pattern="\d*"
                           value={this.state.filter.pendingHeartRateMax}
-                          onChange={this.onChangePendingHeartRateMax}
-                          onBlur={this.onSyncPendingBounds}
+                          onChange={this.onChangePendingFilterHeartRateMax}
+                          onBlur={this.onSyncPendingFilterBounds}
                         />
                       </label>
                     </div>
 
-                    <div className="Filter">
-                      <div className="FilterAttribute">Cadence</div>
-                      <label className="FilterMinLabel">
+                    <div className="Bound">
+                      <div className="BoundAttribute">Cadence</div>
+                      <label className="BoundMinLabel">
                         Min:{" "}
                         <input
-                          className="FilterMin"
+                          className="BoundMin"
                           type="text"
                           pattern="\d*"
                           value={this.state.filter.pendingCadenceMin}
-                          onChange={this.onChangePendingCadenceMin}
-                          onBlur={this.onSyncPendingBounds}
+                          onChange={this.onChangePendingFilterCadenceMin}
+                          onBlur={this.onSyncPendingFilterBounds}
                         />
                       </label>
-                      <label className="FilterMaxLabel">
+                      <label className="BoundMaxLabel">
                         Max:{" "}
                         <input
-                          className="FilterMax"
+                          className="BoundMax"
                           type="text"
                           pattern="\d*"
                           value={this.state.filter.pendingCadenceMax}
-                          onChange={this.onChangePendingCadenceMax}
-                          onBlur={this.onSyncPendingBounds}
+                          onChange={this.onChangePendingFilterCadenceMax}
+                          onBlur={this.onSyncPendingFilterBounds}
                         />
                       </label>
                     </div>
 
-                    <div className="Filter">
-                      <div className="FilterAttribute">Pace</div>
-                      <label className="FilterMinLabel">
+                    <div className="Bound">
+                      <div className="BoundAttribute">Pace</div>
+                      <label className="BoundMinLabel">
                         Min:{" "}
                         <input
-                          className="FilterMin"
+                          className="BoundMin"
                           type="text"
                           pattern="\d*"
                           value={this.state.filter.pendingPaceMin}
-                          onChange={this.onChangePendingPaceMin}
-                          onBlur={this.onSyncPendingBounds}
+                          onChange={this.onChangePendingFilterPaceMin}
+                          onBlur={this.onSyncPendingFilterBounds}
                         />
                       </label>
-                      <label className="FilterMaxLabel">
+                      <label className="BoundMaxLabel">
                         Max:{" "}
                         <input
-                          className="FilterMax"
+                          className="BoundMax"
                           type="text"
                           pattern="\d*"
                           value={this.state.filter.pendingPaceMax}
-                          onChange={this.onChangePendingPaceMax}
-                          onBlur={this.onSyncPendingBounds}
+                          onChange={this.onChangePendingFilterPaceMax}
+                          onBlur={this.onSyncPendingFilterBounds}
                         />
                       </label>
                     </div>
@@ -408,6 +440,90 @@ export default class App extends React.Component<{}, AppState> {
                       <span className="Value">
                         {Math.floor(cumulatives.averageHeartRate)}
                       </span>
+                    </div>
+                  </div>
+
+                  <SectionDivider />
+
+                  <div className="BoundsContainer">
+                    <div className="SectionHeader">Y-axis ranges: </div>
+
+                    <div className="Bound">
+                      <div className="BoundAttribute">Heart Rate</div>
+                      <label className="BoundMinLabel">
+                        Min:{" "}
+                        <input
+                          className="BoundMin"
+                          type="text"
+                          pattern="\d*"
+                          value={this.state.timelineBounds.pendingHeartRateMin}
+                          onChange={this.onChangePendingTimelineHeartRateMin}
+                          onBlur={this.onSyncPendingTimelineBounds}
+                        />
+                      </label>
+                      <label className="BoundMaxLabel">
+                        Max:{" "}
+                        <input
+                          className="BoundMax"
+                          type="text"
+                          pattern="\d*"
+                          value={this.state.timelineBounds.pendingHeartRateMax}
+                          onChange={this.onChangePendingTimelineHeartRateMax}
+                          onBlur={this.onSyncPendingTimelineBounds}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="Bound">
+                      <div className="BoundAttribute">Cadence</div>
+                      <label className="BoundMinLabel">
+                        Min:{" "}
+                        <input
+                          className="BoundMin"
+                          type="text"
+                          pattern="\d*"
+                          value={this.state.timelineBounds.pendingCadenceMin}
+                          onChange={this.onChangePendingTimelineCadenceMin}
+                          onBlur={this.onSyncPendingTimelineBounds}
+                        />
+                      </label>
+                      <label className="BoundMaxLabel">
+                        Max:{" "}
+                        <input
+                          className="BoundMax"
+                          type="text"
+                          pattern="\d*"
+                          value={this.state.timelineBounds.pendingCadenceMax}
+                          onChange={this.onChangePendingTimelineCadenceMax}
+                          onBlur={this.onSyncPendingTimelineBounds}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="Bound">
+                      <div className="BoundAttribute">Pace</div>
+                      <label className="BoundMinLabel">
+                        Min:{" "}
+                        <input
+                          className="BoundMin"
+                          type="text"
+                          pattern="\d*"
+                          value={this.state.timelineBounds.pendingPaceMin}
+                          onChange={this.onChangePendingTimelinePaceMin}
+                          onBlur={this.onSyncPendingTimelineBounds}
+                        />
+                      </label>
+                      <label className="BoundMaxLabel">
+                        Max:{" "}
+                        <input
+                          className="BoundMax"
+                          type="text"
+                          pattern="\d*"
+                          value={this.state.timelineBounds.pendingPaceMax}
+                          onChange={this.onChangePendingTimelinePaceMax}
+                          onBlur={this.onSyncPendingTimelineBounds}
+                        />
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -641,7 +757,7 @@ export default class App extends React.Component<{}, AppState> {
     });
   }
 
-  onChangePendingBound(
+  onChangePendingFilterBound(
     attribute: Attribute,
     boundType: BoundType,
     event: React.ChangeEvent
@@ -655,7 +771,21 @@ export default class App extends React.Component<{}, AppState> {
     });
   }
 
-  onSyncPendingBounds() {
+  onChangePendingTimelineBound(
+    attribute: Attribute,
+    boundType: BoundType,
+    event: React.ChangeEvent
+  ) {
+    this.setState({
+      timelineBounds: this.state.timelineBounds.setPendingBound(
+        attribute,
+        boundType,
+        (event.target as HTMLInputElement).value
+      ),
+    });
+  }
+
+  onSyncPendingFilterBounds() {
     const filter = this.state.filter.syncPendingBoundsWithActualBounds();
     this.setState({
       filter,
@@ -665,12 +795,18 @@ export default class App extends React.Component<{}, AppState> {
       })),
     });
   }
+
+  onSyncPendingTimelineBounds() {
+    const timelineBounds = this.state.timelineBounds.syncPendingBoundsWithActualBounds();
+    this.setState({ timelineBounds });
+  }
 }
 
 interface AppState {
   activity: Option<ActivityViewState>;
   mouseDownTarget: Option<Element>;
   filter: Filter;
+  timelineBounds: Filter;
 }
 
 interface ActivityViewState {

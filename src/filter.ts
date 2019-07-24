@@ -18,9 +18,9 @@ export class Filter {
   public pendingPaceMin: string;
   public pendingPaceMax: string;
 
-  private heartRate: [number, number];
-  private cadence: [number, number];
-  private pace: [number, number];
+  public heartRate: [number, number];
+  public cadence: [number, number];
+  public pace: [number, number];
 
   constructor(config: FilterConfig) {
     this.pendingHeartRateMin = "" + config.heartRate[0];

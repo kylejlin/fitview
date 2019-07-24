@@ -94,33 +94,33 @@
   font-weight: bold;
 }
 
-.Filter {
+.Bound {
   margin-bottom: calc(0.05 * var(--minor-axis));
 }
 
-.FilterAttribute {
+.BoundAttribute {
   color: #eee;
   padding: calc(0.01 * var(--minor-axis));
   font-size: calc(0.055 * var(--minor-axis));
 }
 
-.FilterMinLabel,
-.FilterMaxLabel {
+.BoundMinLabel,
+.BoundMaxLabel {
   padding: calc(0.01 * var(--minor-axis));
   font-size: calc(0.05 * var(--minor-axis));
 }
 
-.FilterMinLabel {
+.BoundMinLabel {
   padding-left: calc(0.03 * var(--major-axis));
   color: var(--min-color);
 }
 
-.FilterMaxLabel {
+.BoundMaxLabel {
   color: var(--max-color);
 }
 
-.FilterMin,
-.FilterMax {
+.BoundMin,
+.BoundMax {
   background-color: transparent;
   color: #eee;
   border: 1px solid #444;

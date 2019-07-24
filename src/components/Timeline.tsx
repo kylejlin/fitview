@@ -86,11 +86,12 @@ export default function Timeline({
                     window.innerWidth * (deltaTime / viewedDuration) +
                     recordDotRadius()
                   }
-                  y={
+                  y={Math.max(
+                    0,
                     timelineHeight() -
-                    timelineHeight() *
-                      (getRecordAttribute(record, attribute) / 200)
-                  }
+                      timelineHeight() *
+                        (getRecordAttribute(record, attribute) / 200)
+                  )}
                   radius={recordDotRadius()}
                 />
               );

@@ -15,24 +15,24 @@ export class Filter {
   public pendingHeartRateMax: string;
   public pendingCadenceMin: string;
   public pendingCadenceMax: string;
-  public pendingSpeedMin: string;
-  public pendingSpeedMax: string;
+  public pendingPaceMin: string;
+  public pendingPaceMax: string;
 
   private heartRate: [number, number];
   private cadence: [number, number];
-  private speed: [number, number];
+  private pace: [number, number];
 
   constructor(config: FilterConfig) {
     this.pendingHeartRateMin = "" + config.heartRate[0];
     this.pendingHeartRateMax = "" + config.heartRate[1];
     this.pendingCadenceMin = "" + config.cadence[0];
     this.pendingCadenceMax = "" + config.cadence[1];
-    this.pendingSpeedMin = "" + config.speed[0];
-    this.pendingSpeedMax = "" + config.speed[1];
+    this.pendingPaceMin = "" + config.pace[0];
+    this.pendingPaceMax = "" + config.pace[1];
 
     this.heartRate = config.heartRate;
     this.cadence = config.cadence;
-    this.speed = config.speed;
+    this.pace = config.pace;
   }
 
   setPendingBound(
@@ -47,8 +47,8 @@ export class Filter {
   }
 
   private config(): FilterConfig {
-    const { heartRate, cadence, speed } = this;
-    return { heartRate, cadence, speed };
+    const { heartRate, cadence, pace } = this;
+    return { heartRate, cadence, pace };
   }
 
   syncPendingBoundsWithActualBounds(): Filter {
@@ -63,7 +63,7 @@ export class Filter {
         this.pendingCadenceMin,
         this.pendingCadenceMax
       ),
-      speed: sync(this.speed, this.pendingSpeedMin, this.pendingSpeedMax),
+      pace: sync(this.pace, this.pendingPaceMin, this.pendingPaceMax),
     });
   }
 
@@ -90,7 +90,7 @@ export class Filter {
       case Attribute.Cadence:
         return this.cadence;
       case Attribute.Pace:
-        return this.speed;
+        return this.pace;
     }
   }
 }
@@ -118,7 +118,7 @@ function strictParseInt(value: string): number {
 interface FilterConfig {
   heartRate: [number, number];
   cadence: [number, number];
-  speed: [number, number];
+  pace: [number, number];
 }
 
 function pendingKeyFromAttributeAndBoundType(
@@ -137,7 +137,7 @@ function pendingKeyBeginningAttribute(attribute: Attribute): string {
     case Attribute.Cadence:
       return "pendingCadence";
     case Attribute.Pace:
-      return "pendingSpeed";
+      return "pendingPace";
   }
 }
 

@@ -40,8 +40,8 @@ export default class App extends React.Component<{}, AppState> {
   private onChangePendingHeartRateMax: (event: React.ChangeEvent) => void;
   private onChangePendingCadenceMin: (event: React.ChangeEvent) => void;
   private onChangePendingCadenceMax: (event: React.ChangeEvent) => void;
-  private onChangePendingSpeedMin: (event: React.ChangeEvent) => void;
-  private onChangePendingSpeedMax: (event: React.ChangeEvent) => void;
+  private onChangePendingPaceMin: (event: React.ChangeEvent) => void;
+  private onChangePendingPaceMax: (event: React.ChangeEvent) => void;
 
   constructor(props: object) {
     super(props);
@@ -52,7 +52,7 @@ export default class App extends React.Component<{}, AppState> {
       filter: new Filter({
         heartRate: [0, 200],
         cadence: [0, 200],
-        speed: [0, 40],
+        pace: [0, 15],
       }),
     };
 
@@ -87,9 +87,9 @@ export default class App extends React.Component<{}, AppState> {
       this.onChangePendingBound(Attribute.Cadence, BoundType.Min, e);
     this.onChangePendingCadenceMax = (e) =>
       this.onChangePendingBound(Attribute.Cadence, BoundType.Max, e);
-    this.onChangePendingSpeedMin = (e) =>
+    this.onChangePendingPaceMin = (e) =>
       this.onChangePendingBound(Attribute.Pace, BoundType.Min, e);
-    this.onChangePendingSpeedMax = (e) =>
+    this.onChangePendingPaceMax = (e) =>
       this.onChangePendingBound(Attribute.Pace, BoundType.Max, e);
   }
 
@@ -344,15 +344,15 @@ export default class App extends React.Component<{}, AppState> {
                     </div>
 
                     <div className="Filter">
-                      <div className="FilterAttribute">Speed</div>
+                      <div className="FilterAttribute">Pace</div>
                       <label className="FilterMinLabel">
                         Min:{" "}
                         <input
                           className="FilterMin"
                           type="text"
                           pattern="\d*"
-                          value={this.state.filter.pendingSpeedMin}
-                          onChange={this.onChangePendingSpeedMin}
+                          value={this.state.filter.pendingPaceMin}
+                          onChange={this.onChangePendingPaceMin}
                           onBlur={this.onSyncPendingBounds}
                         />
                       </label>
@@ -362,8 +362,8 @@ export default class App extends React.Component<{}, AppState> {
                           className="FilterMax"
                           type="text"
                           pattern="\d*"
-                          value={this.state.filter.pendingSpeedMax}
-                          onChange={this.onChangePendingSpeedMax}
+                          value={this.state.filter.pendingPaceMax}
+                          onChange={this.onChangePendingPaceMax}
                           onBlur={this.onSyncPendingBounds}
                         />
                       </label>

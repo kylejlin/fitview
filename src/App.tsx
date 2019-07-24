@@ -125,7 +125,7 @@ export default class App extends React.Component<{}, AppState> {
 
             offsetTime,
             offsetIndex,
-            width,
+            viewedDuration,
 
             cumulatives,
           }) => {
@@ -264,7 +264,7 @@ export default class App extends React.Component<{}, AppState> {
                       attribute={Attribute.HeartRate}
                       records={records}
                       offsetIndex={offsetIndex}
-                      width={width}
+                      viewedDuration={viewedDuration}
                       filter={this.state.filter}
                       shouldConvertRpmToSpm={shouldConvertRpmToSpm}
                     />
@@ -272,7 +272,7 @@ export default class App extends React.Component<{}, AppState> {
                       attribute={Attribute.Cadence}
                       records={records}
                       offsetIndex={offsetIndex}
-                      width={width}
+                      viewedDuration={viewedDuration}
                       filter={this.state.filter}
                       shouldConvertRpmToSpm={shouldConvertRpmToSpm}
                     />
@@ -280,7 +280,7 @@ export default class App extends React.Component<{}, AppState> {
                       attribute={Attribute.Pace}
                       records={records}
                       offsetIndex={offsetIndex}
-                      width={width}
+                      viewedDuration={viewedDuration}
                       filter={this.state.filter}
                       shouldConvertRpmToSpm={shouldConvertRpmToSpm}
                     />
@@ -460,7 +460,7 @@ export default class App extends React.Component<{}, AppState> {
 
                   offsetTime: activity.start_time,
                   offsetIndex: 0,
-                  width: STARTING_WIDTH,
+                  viewedDuration: STARTING_VIEWED_DURATION,
 
                   cumulatives: getCumulatives(activity, this.state.filter),
 
@@ -567,34 +567,36 @@ export default class App extends React.Component<{}, AppState> {
           }),
         }));
       } else if (this.isTimelineDragged()) {
-        this.setState((state) => ({
-          activity: state.activity.map((activityState) => {
-            return activityState.timelineScroll.match({
-              none: () => activityState,
-              some: ({ initialPointerLocation, initialOffsetIndex }) => {
-                const dx = x - initialPointerLocation.x;
-                const widthFactor = dx / window.innerWidth;
-                const deltaIndex = Math.floor(
-                  -activityState.width * widthFactor
-                );
-                const newIndex = Math.max(
-                  0,
-                  Math.min(
-                    activityState.activity.records.length - 1,
-                    initialOffsetIndex + deltaIndex
-                  )
-                );
-                const newTime =
-                  activityState.activity.records[newIndex].timestamp;
-                return {
-                  ...activityState,
-                  offsetIndex: newIndex,
-                  offsetTime: newTime,
-                };
-              },
-            });
-          }),
-        }));
+        // TODO Reenable support for directly dragging timelines
+        //
+        // this.setState((state) => ({
+        //   activity: state.activity.map((activityState) => {
+        //     return activityState.timelineScroll.match({
+        //       none: () => activityState,
+        //       some: ({ initialPointerLocation, initialOffsetIndex }) => {
+        //         const dx = x - initialPointerLocation.x;
+        //         const widthFactor = dx / window.innerWidth;
+        //         const deltaIndex = Math.floor(
+        //           -activityState.width * widthFactor
+        //         );
+        //         const newIndex = Math.max(
+        //           0,
+        //           Math.min(
+        //             activityState.activity.records.length - 1,
+        //             initialOffsetIndex + deltaIndex
+        //           )
+        //         );
+        //         const newTime =
+        //           activityState.activity.records[newIndex].timestamp;
+        //         return {
+        //           ...activityState,
+        //           offsetIndex: newIndex,
+        //           offsetTime: newTime,
+        //         };
+        //       },
+        //     });
+        //   }),
+        // }));
       }
     }
   }
@@ -661,7 +663,7 @@ interface ActivityViewState {
 
   offsetTime: Date;
   offsetIndex: number;
-  width: number;
+  viewedDuration: number;
 
   cumulatives: Cumulatives;
 
@@ -671,4 +673,4 @@ interface ActivityViewState {
   }>;
 }
 
-const STARTING_WIDTH = 87;
+const STARTING_VIEWED_DURATION = 300e3;

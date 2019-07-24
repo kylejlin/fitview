@@ -142,3 +142,17 @@ export function average(numbers: number[]): number {
 export function metersToMiles(meters: number): number {
   return meters / 1609.34;
 }
+
+export function sliceDuration(records: Record[], duration: number): Record[] {
+  if (records.length === 0) {
+    return [];
+  } else {
+    const endTime = records[0].timestamp.getTime() + duration;
+    const endIndex = records.findIndex((r) => r.timestamp.getTime() > endTime);
+    if (endIndex === -1) {
+      return records.slice();
+    } else {
+      return records.slice(0, endIndex);
+    }
+  }
+}

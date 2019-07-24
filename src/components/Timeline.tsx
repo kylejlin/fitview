@@ -11,13 +11,13 @@ import {
   Attribute,
   Record,
 } from "../getActivity";
-import { fractionalMinuteToPaceString } from "../helpers";
+import { fractionalMinuteToPaceString, sliceDuration } from "../helpers";
 
 export default function Timeline({
   attribute,
   records,
   offsetIndex,
-  width,
+  viewedDuration,
   filter,
   shouldConvertRpmToSpm,
 }: Props): React.ReactElement {
@@ -63,28 +63,39 @@ export default function Timeline({
             width={window.innerWidth}
             height={timelineHeight()}
           />
-          {records.slice(offsetIndex, offsetIndex + width).map((record, i) => (
-            <Circle
-              key={record.index}
-              fill={(() => {
-                if (filter.isAttributeIllegal(attribute, record)) {
-                  return ILLEGAL_ATTRIBUTE_RECORD_DOT_FILL;
-                } else if (filter.isAnyAttributeIllegal(record)) {
-                  return ILLEGAL_OTHER_ATTRIBUTE_RECORD_DOT_FILL;
-                } else {
-                  return i === 0
-                    ? ACTIVE_RECORD_DOT_FILL
-                    : INACTIVE_RECORD_DOT_FILL;
-                }
-              })()}
-              x={window.innerWidth * (i / width) + recordDotRadius()}
-              y={
-                timelineHeight() -
-                timelineHeight() * (getRecordAttribute(record, attribute) / 200)
-              }
-              radius={recordDotRadius()}
-            />
-          ))}
+          {sliceDuration(records.slice(offsetIndex), viewedDuration).map(
+            (record, i) => {
+              const deltaTime =
+                record.timestamp.getTime() -
+                records[offsetIndex].timestamp.getTime();
+              return (
+                <Circle
+                  key={record.index}
+                  fill={(() => {
+                    if (filter.isAttributeIllegal(attribute, record)) {
+                      return ILLEGAL_ATTRIBUTE_RECORD_DOT_FILL;
+                    } else if (filter.isAnyAttributeIllegal(record)) {
+                      return ILLEGAL_OTHER_ATTRIBUTE_RECORD_DOT_FILL;
+                    } else {
+                      return i === 0
+                        ? ACTIVE_RECORD_DOT_FILL
+                        : INACTIVE_RECORD_DOT_FILL;
+                    }
+                  })()}
+                  x={
+                    window.innerWidth * (deltaTime / viewedDuration) +
+                    recordDotRadius()
+                  }
+                  y={
+                    timelineHeight() -
+                    timelineHeight() *
+                      (getRecordAttribute(record, attribute) / 200)
+                  }
+                  radius={recordDotRadius()}
+                />
+              );
+            }
+          )}
         </Layer>
       </Stage>
     </div>
@@ -95,7 +106,7 @@ interface Props {
   attribute: Attribute;
   records: Record[];
   offsetIndex: number;
-  width: number;
+  viewedDuration: number;
   filter: Filter;
   shouldConvertRpmToSpm: boolean;
 }

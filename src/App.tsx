@@ -9,6 +9,7 @@ import Timeline from "./components/Timeline";
 import { isOrIsAncestorOf, EasyFit } from "./lib";
 
 import roundTo from "round-to";
+import leaflet from "leaflet";
 
 import { getCumulatives, Cumulatives } from "./cumulatives";
 import { BoundType, Filter } from "./filter";
@@ -36,6 +37,7 @@ import Qprom from "./Qprom";
 export default class App extends React.Component<{}, AppState> {
   private fileRef: React.RefObject<HTMLInputElement>;
   private minimapRef: React.RefObject<HTMLDivElement>;
+  private mapRef: React.RefObject<HTMLDivElement>;
 
   private onChangePendingFilterHeartRateMin: (event: React.ChangeEvent) => void;
   private onChangePendingFilterHeartRateMax: (event: React.ChangeEvent) => void;
@@ -54,6 +56,8 @@ export default class App extends React.Component<{}, AppState> {
   private onChangePendingTimelineCadenceMax: (event: React.ChangeEvent) => void;
   private onChangePendingTimelinePaceMin: (event: React.ChangeEvent) => void;
   private onChangePendingTimelinePaceMax: (event: React.ChangeEvent) => void;
+
+  private leafletState: Option<LeafletState>;
 
   constructor(props: object) {
     super(props);
@@ -75,6 +79,9 @@ export default class App extends React.Component<{}, AppState> {
 
     this.fileRef = React.createRef();
     this.minimapRef = React.createRef();
+    this.mapRef = React.createRef();
+
+    this.leafletState = Option.none();
 
     window.addEventListener("resize", () => this.forceUpdate());
     window.addEventListener("orientationchange", () => this.forceUpdate());
@@ -124,6 +131,64 @@ export default class App extends React.Component<{}, AppState> {
       this.onChangePendingTimelineBound(Attribute.Pace, BoundType.Min, e);
     this.onChangePendingTimelinePaceMax = (e) =>
       this.onChangePendingTimelineBound(Attribute.Pace, BoundType.Max, e);
+  }
+
+  componentDidUpdate() {
+    // We are using `map` as `if let Some`, so eslint will give us grief.
+    // eslint-disable-next-line
+    this.state.activity.map((activity) => {
+      const { records } = activity.activity;
+      const { offsetIndex } = activity;
+      const currentRecord = records[offsetIndex];
+      const startRecord = records[0];
+      const endRecord = records[records.length - 1];
+
+      this.leafletState = this.leafletState.match({
+        none: () => {
+          if (this.mapRef && this.mapRef.current) {
+            const currentMarker = leaflet.marker(
+              [currentRecord.position_lat, currentRecord.position_long],
+              { title: "Current location" }
+            );
+            const startMarker = leaflet.marker(
+              [startRecord.position_lat, startRecord.position_long],
+              { title: "Start" }
+            );
+            const endMarker = leaflet.marker(
+              [endRecord.position_lat, endRecord.position_long],
+              { title: "End" }
+            );
+            const map = leaflet.map(this.mapRef.current, {
+              center: [startRecord.position_lat, startRecord.position_long],
+              zoom: 13,
+              layers: [
+                leaflet.tileLayer(
+                  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                ),
+                currentMarker,
+                startMarker,
+                endMarker,
+              ],
+            });
+            return Option.some({
+              map,
+              currentMarker,
+              startMarker,
+              endMarker,
+            });
+          } else {
+            return Option.none();
+          }
+        },
+        some: (leafletState) => {
+          leafletState.currentMarker.setLatLng([
+            currentRecord.position_lat,
+            currentRecord.position_long,
+          ]);
+          return Option.some(leafletState);
+        },
+      });
+    });
   }
 
   render() {
@@ -526,6 +591,10 @@ export default class App extends React.Component<{}, AppState> {
                       </label>
                     </div>
                   </div>
+
+                  <SectionDivider />
+
+                  <div className="LeafletMap" ref={this.mapRef} />
                 </div>
               </div>
             );
@@ -827,6 +896,13 @@ interface ActivityViewState {
     initialPointerLocation: { x: number; y: number };
     initialOffsetTime: Date;
   }>;
+}
+
+interface LeafletState {
+  map: leaflet.Map;
+  currentMarker: leaflet.Marker;
+  startMarker: leaflet.Marker;
+  endMarker: leaflet.Marker;
 }
 
 const STARTING_VIEWED_DURATION = 300e3;

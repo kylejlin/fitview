@@ -134,3 +134,8 @@
   border-radius: var(--width);
   padding: calc(0.01 * var(--major-axis));
 }
+
+.LeafletMap {
+  height: calc(0.5 * var(--minor-axis));
+  width: 100vw;
+}

@@ -79,7 +79,6 @@ export function reverseGeocode(lat: number, lon: number): Promise<Address> {
         if (err) {
           reject(err);
         } else {
-          console.log(result);
           resolve(result);
         }
       });

@@ -215,7 +215,7 @@ export default class App extends React.Component<{}, AppState> {
             <label className="UploadButton">
               <input
                 type="file"
-                accept="fit"
+                accept=".fit"
                 onChange={this.handleUpload}
                 ref={this.fileRef}
                 style={{ display: "none" }}

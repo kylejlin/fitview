@@ -32,6 +32,11 @@ import {
   pickAboutN,
   Address,
 } from "./helpers";
+import {
+  currentMarkerIcon,
+  startMarkerIcon,
+  endMarkerIcon,
+} from "./markerIcons";
 import Option from "./Option";
 import Qprom from "./Qprom";
 
@@ -155,15 +160,15 @@ export default class App extends React.Component<{}, AppState> {
             );
             const currentMarker = leaflet.marker(
               [currentRecord.position_lat, currentRecord.position_long],
-              { title: "Current location" }
+              { title: "Current location", icon: currentMarkerIcon }
             );
             const startMarker = leaflet.marker(
               [startRecord.position_lat, startRecord.position_long],
-              { title: "Start" }
+              { title: "Start", icon: startMarkerIcon }
             );
             const endMarker = leaflet.marker(
               [endRecord.position_lat, endRecord.position_long],
-              { title: "End" }
+              { title: "End", icon: endMarkerIcon }
             );
             const map = leaflet.map(this.mapRef.current, {
               center: [startRecord.position_lat, startRecord.position_long],

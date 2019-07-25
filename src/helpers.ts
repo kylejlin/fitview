@@ -188,3 +188,17 @@ export function clamp({
 }): number {
   return Math.min(max, Math.max(min, value));
 }
+
+export function pickAboutN<T>(items: T[], n: number): T[] {
+  const step = items.length / n;
+  const picked = [];
+  let prevIndex = -1;
+  for (let i = 0; i < items.length; i += step) {
+    const j = Math.floor(i);
+    if (prevIndex !== j) {
+      picked.push(items[j]);
+      prevIndex = j;
+    }
+  }
+  return picked;
+}

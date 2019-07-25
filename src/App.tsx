@@ -29,6 +29,7 @@ import {
   getFirstRecordTimestampOrActivityStartTime,
   getLastRecordTimestampOrActivityEndTime,
   clamp,
+  pickAboutN,
   Address,
 } from "./helpers";
 import Option from "./Option";
@@ -146,6 +147,12 @@ export default class App extends React.Component<{}, AppState> {
       this.leafletState = this.leafletState.match({
         none: () => {
           if (this.mapRef && this.mapRef.current) {
+            const polyline = leaflet.polygon(
+              pickAboutN(records, POLYLINE_POINTS).map((record) => [
+                record.position_lat,
+                record.position_long,
+              ])
+            );
             const currentMarker = leaflet.marker(
               [currentRecord.position_lat, currentRecord.position_long],
               { title: "Current location" }
@@ -165,6 +172,7 @@ export default class App extends React.Component<{}, AppState> {
                 leaflet.tileLayer(
                   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 ),
+                polyline,
                 currentMarker,
                 startMarker,
                 endMarker,
@@ -906,3 +914,4 @@ interface LeafletState {
 }
 
 const STARTING_VIEWED_DURATION = 300e3;
+const POLYLINE_POINTS = 60;

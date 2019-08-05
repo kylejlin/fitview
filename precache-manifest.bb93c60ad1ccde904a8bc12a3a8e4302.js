@@ -1,19 +1,19 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "7cf3425dc3923c51b2921e2b52703164",
+    "revision": "e248e0a3c71ab7b7d2fc604a58741e10",
     "url": "/fitview/index.html"
   },
   {
-    "revision": "06a151c0a568000cdd91",
-    "url": "/fitview/static/css/main.7e688e19.chunk.css"
+    "revision": "1ddbc9363b0863b4da9f",
+    "url": "/fitview/static/css/main.68a8fa55.chunk.css"
   },
   {
     "revision": "725670671eede9d6fe81",
     "url": "/fitview/static/js/2.9b212044.chunk.js"
   },
   {
-    "revision": "06a151c0a568000cdd91",
-    "url": "/fitview/static/js/main.b1d5f4db.chunk.js"
+    "revision": "1ddbc9363b0863b4da9f",
+    "url": "/fitview/static/js/main.55e551ae.chunk.js"
   },
   {
     "revision": "3d30f2e9473dc79d3a36",

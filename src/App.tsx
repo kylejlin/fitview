@@ -10,6 +10,7 @@ import { isOrIsAncestorOf, EasyFit } from "./lib";
 
 import roundTo from "round-to";
 import leaflet from "leaflet";
+import "./leafletStyles/index.css";
 
 import { getCumulatives, Cumulatives } from "./cumulatives";
 import { BoundType, Filter } from "./filter";

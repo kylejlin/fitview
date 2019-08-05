@@ -291,7 +291,16 @@ export default class App extends React.Component<{}, AppState> {
                     {startLocation.match({
                       onUpdate: this.forceUpdate,
                       pending: () => "",
-                      fulfilled: (location) => location.address.city + " ",
+                      fulfilled: (location) =>
+                        location.match({
+                          none: () => "Unlocated",
+                          some: (location) =>
+                            location.address.city ||
+                            location.address.county ||
+                            location.address.state ||
+                            location.address.province ||
+                            location.address.country,
+                        }) + " ",
                       rejected: () => "",
                     })}
                     {capitalizeFirstLetter(sport)}
@@ -669,9 +678,15 @@ export default class App extends React.Component<{}, AppState> {
             if (error) {
               throw error;
             } else {
-              const firstSession = data.activity.sessions[0];
               const records = getActivityRecords(data.activity);
-              const endRecord = records[records.length - 1];
+              const firstPositionedRecord = getNearestPositionedRecord(
+                records,
+                0
+              );
+              const lastPositionedRecord = getNearestPositionedRecord(
+                records,
+                records.length - 1
+              );
 
               const activity = getActivity(data);
 
@@ -680,17 +695,25 @@ export default class App extends React.Component<{}, AppState> {
                   activity,
 
                   startLocation: Qprom.fromPromise(
-                    reverseGeocode(
-                      firstSession.start_position_lat,
-                      firstSession.start_position_long
-                    )
+                    firstPositionedRecord.match({
+                      none: () => Promise.resolve(Option.none()),
+                      some: (record) =>
+                        reverseGeocode(
+                          record.position_lat,
+                          record.position_long
+                        ).then((address) => Option.some(address)),
+                    })
                   ),
                   isStartLocationTruncated: true,
                   endLocation: Qprom.fromPromise(
-                    reverseGeocode(
-                      endRecord.position_lat,
-                      endRecord.position_long
-                    )
+                    lastPositionedRecord.match({
+                      none: () => Promise.resolve(Option.none()),
+                      some: (record) =>
+                        reverseGeocode(
+                          record.position_lat,
+                          record.position_long
+                        ).then((address) => Option.some(address)),
+                    })
                   ),
                   isEndLocationTruncated: true,
 
@@ -925,9 +948,9 @@ interface AppState {
 interface ActivityViewState {
   activity: Activity;
 
-  startLocation: Qprom<Address>;
+  startLocation: Qprom<Option<Address>>;
   isStartLocationTruncated: boolean;
-  endLocation: Qprom<Address>;
+  endLocation: Qprom<Option<Address>>;
   isEndLocationTruncated: boolean;
 
   offsetTime: Date;

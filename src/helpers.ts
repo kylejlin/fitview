@@ -113,6 +113,7 @@ export interface Address {
     house_number?: string;
     neighbourhood?: string;
     postcode?: string;
+    province?: string;
     road?: string;
     state?: string;
     supermarket?: string;

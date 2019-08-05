@@ -145,22 +145,22 @@ export default class App extends React.Component<{}, AppState> {
     this.state.activity.ifSome((activity) => {
       const { records } = activity.activity;
       const { offsetIndex } = activity;
-      const currentlyMarkedRecord = getNearestPositionedRecord(
-        records,
-        offsetIndex
-      );
       const startLocationRecord = getNearestPositionedRecord(records, 0);
       const endLocationRecord = getNearestPositionedRecord(
         records,
         records.length - 1
       );
+      const currentlyMarkedRecord = getNearestPositionedRecord(
+        records,
+        offsetIndex
+      );
 
       Option.all([
-        currentlyMarkedRecord,
         startLocationRecord,
         endLocationRecord,
+        currentlyMarkedRecord,
       ]).ifSome(
-        ([currentlyMarkedRecord, startLocationRecord, endLocationRecord]) => {
+        ([startLocationRecord, endLocationRecord, currentlyMarkedRecord]) => {
           this.leafletState = this.leafletState.match({
             none: () => {
               if (this.mapRef && this.mapRef.current) {
@@ -176,13 +176,6 @@ export default class App extends React.Component<{}, AppState> {
                       record.position_long,
                     ])
                 );
-                const currentMarker = leaflet.marker(
-                  [
-                    currentlyMarkedRecord.position_lat,
-                    currentlyMarkedRecord.position_long,
-                  ],
-                  { title: "Current location", icon: currentMarkerIcon }
-                );
                 const startMarker = leaflet.marker(
                   [
                     startLocationRecord.position_lat,
@@ -197,6 +190,13 @@ export default class App extends React.Component<{}, AppState> {
                   ],
                   { title: "End", icon: endMarkerIcon }
                 );
+                const currentMarker = leaflet.marker(
+                  [
+                    currentlyMarkedRecord.position_lat,
+                    currentlyMarkedRecord.position_long,
+                  ],
+                  { title: "Current location", icon: currentMarkerIcon }
+                );
                 const map = leaflet.map(this.mapRef.current, {
                   center: [
                     startLocationRecord.position_lat,
@@ -208,16 +208,16 @@ export default class App extends React.Component<{}, AppState> {
                       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     ),
                     polyline,
-                    currentMarker,
                     startMarker,
                     endMarker,
+                    currentMarker,
                   ],
                 });
                 return Option.some({
                   map,
-                  currentMarker,
                   startMarker,
                   endMarker,
+                  currentMarker,
                 });
               } else {
                 return Option.none();

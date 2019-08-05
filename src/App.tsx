@@ -30,6 +30,7 @@ import {
   getLastRecordTimestampOrActivityEndTime,
   clamp,
   pickAboutN,
+  getNearestPositionedRecord,
   Address,
 } from "./helpers";
 import {
@@ -140,67 +141,97 @@ export default class App extends React.Component<{}, AppState> {
   }
 
   componentDidUpdate() {
-    // We are using `map` as `if let Some`, so eslint will give us grief.
-    // eslint-disable-next-line
-    this.state.activity.map((activity) => {
+    this.state.activity.ifSome((activity) => {
       const { records } = activity.activity;
       const { offsetIndex } = activity;
-      const currentRecord = records[offsetIndex];
-      const startRecord = records[0];
-      const endRecord = records[records.length - 1];
+      const currentlyMarkedRecord = getNearestPositionedRecord(
+        records,
+        offsetIndex
+      );
+      const startLocationRecord = getNearestPositionedRecord(records, 0);
+      const endLocationRecord = getNearestPositionedRecord(
+        records,
+        records.length - 1
+      );
 
-      this.leafletState = this.leafletState.match({
-        none: () => {
-          if (this.mapRef && this.mapRef.current) {
-            const polyline = leaflet.polygon(
-              pickAboutN(records, POLYLINE_POINTS).map((record) => [
-                record.position_lat,
-                record.position_long,
-              ])
-            );
-            const currentMarker = leaflet.marker(
-              [currentRecord.position_lat, currentRecord.position_long],
-              { title: "Current location", icon: currentMarkerIcon }
-            );
-            const startMarker = leaflet.marker(
-              [startRecord.position_lat, startRecord.position_long],
-              { title: "Start", icon: startMarkerIcon }
-            );
-            const endMarker = leaflet.marker(
-              [endRecord.position_lat, endRecord.position_long],
-              { title: "End", icon: endMarkerIcon }
-            );
-            const map = leaflet.map(this.mapRef.current, {
-              center: [startRecord.position_lat, startRecord.position_long],
-              zoom: 13,
-              layers: [
-                leaflet.tileLayer(
-                  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                ),
-                polyline,
-                currentMarker,
-                startMarker,
-                endMarker,
-              ],
-            });
-            return Option.some({
-              map,
-              currentMarker,
-              startMarker,
-              endMarker,
-            });
-          } else {
-            return Option.none();
-          }
-        },
-        some: (leafletState) => {
-          leafletState.currentMarker.setLatLng([
-            currentRecord.position_lat,
-            currentRecord.position_long,
-          ]);
-          return Option.some(leafletState);
-        },
-      });
+      Option.all([
+        currentlyMarkedRecord,
+        startLocationRecord,
+        endLocationRecord,
+      ]).ifSome(
+        ([currentlyMarkedRecord, startLocationRecord, endLocationRecord]) => {
+          this.leafletState = this.leafletState.match({
+            none: () => {
+              if (this.mapRef && this.mapRef.current) {
+                const polyline = leaflet.polygon(
+                  pickAboutN(records, POLYLINE_POINTS)
+                    .filter(
+                      (record) =>
+                        "number" === typeof record.position_lat &&
+                        "number" === typeof record.position_long
+                    )
+                    .map((record) => [
+                      record.position_lat,
+                      record.position_long,
+                    ])
+                );
+                const currentMarker = leaflet.marker(
+                  [
+                    currentlyMarkedRecord.position_lat,
+                    currentlyMarkedRecord.position_long,
+                  ],
+                  { title: "Current location", icon: currentMarkerIcon }
+                );
+                const startMarker = leaflet.marker(
+                  [
+                    startLocationRecord.position_lat,
+                    startLocationRecord.position_long,
+                  ],
+                  { title: "Start", icon: startMarkerIcon }
+                );
+                const endMarker = leaflet.marker(
+                  [
+                    endLocationRecord.position_lat,
+                    endLocationRecord.position_long,
+                  ],
+                  { title: "End", icon: endMarkerIcon }
+                );
+                const map = leaflet.map(this.mapRef.current, {
+                  center: [
+                    startLocationRecord.position_lat,
+                    startLocationRecord.position_long,
+                  ],
+                  zoom: 13,
+                  layers: [
+                    leaflet.tileLayer(
+                      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    ),
+                    polyline,
+                    currentMarker,
+                    startMarker,
+                    endMarker,
+                  ],
+                });
+                return Option.some({
+                  map,
+                  currentMarker,
+                  startMarker,
+                  endMarker,
+                });
+              } else {
+                return Option.none();
+              }
+            },
+            some: (leafletState) => {
+              leafletState.currentMarker.setLatLng([
+                currentlyMarkedRecord.position_lat,
+                currentlyMarkedRecord.position_long,
+              ]);
+              return Option.some(leafletState);
+            },
+          });
+        }
+      );
     });
   }
 

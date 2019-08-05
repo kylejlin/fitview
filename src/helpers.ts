@@ -1,5 +1,6 @@
 import { geocoder } from "./lib";
 import { Activity, Record } from "./getActivity";
+import Option from "./Option";
 
 export function getActivityRecords(activity: any): any[] {
   return activity.sessions
@@ -200,4 +201,32 @@ export function pickAboutN<T>(items: T[], n: number): T[] {
     }
   }
   return picked;
+}
+
+export function getNearestPositionedRecord(
+  records: Record[],
+  index: number
+): Option<Record> {
+  for (
+    let absoluteOffset = 0;
+    absoluteOffset < records.length;
+    absoluteOffset++
+  ) {
+    const leftRecord = records[index - absoluteOffset];
+    if (leftRecord && isRecordPositioned(leftRecord)) {
+      return Option.some(leftRecord);
+    }
+    const rightRecord = records[index + absoluteOffset];
+    if (rightRecord && isRecordPositioned(rightRecord)) {
+      return Option.some(rightRecord);
+    }
+  }
+  return Option.none();
+}
+
+function isRecordPositioned(record: Record): boolean {
+  return (
+    "number" === typeof record.position_lat &&
+    "number" === typeof record.position_long
+  );
 }
